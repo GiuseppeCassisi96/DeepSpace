@@ -3,6 +3,8 @@
 
 #include "MainCharacter.h"
 
+
+
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
@@ -44,6 +46,7 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	forwardVelocity = GetMovementComponent()->Velocity.Length();
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -61,20 +64,42 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::Move(const FInputActionValue& actionValue)
 {
 	FVector2D inputValue = actionValue.Get<FVector2D>();
-	inputValue *= movementSpeed;
 	FVector forwardDirection = GetActorForwardVector();
 	FVector rightDirection = GetActorRightVector();
 	FVector direction = forwardDirection * inputValue.X + rightDirection * inputValue.Y;
-	FVector movement = direction * GetWorld()->GetDeltaSeconds();
+	if(inputValue.Y > 0.0f)
+	{
+		isMovementRight = true;
+		isMovementLeft = false;
+	}
+	else if (inputValue.Y < 0.0f)
+	{
+		isMovementRight = false;
+		isMovementLeft = true;
+	}
+	else
+	{
+		isMovementRight = false;
+		isMovementLeft = false;
+	}
+	if(inputValue.X < 0)
+	{
+		isMovementBack = true;
+	}
+	else
+	{
+		isMovementBack = false;
+	}
+
+	FVector movement = direction * movementSpeed;
 	AddMovementInput(movement);
 }
 
 void AMainCharacter::Rotation(const FInputActionValue& actionValue)
 {
-	float deltaTime = GetWorld()->GetDeltaSeconds();
 	FVector2D inputValue = actionValue.Get<FVector2D>();
-	SpringArm->AddLocalRotation(FRotator(inputValue.Y * rotationSpeed * deltaTime, 0.0f, 0.0f));
-	AddControllerYawInput(inputValue.X * rotationSpeed * deltaTime);
+	SpringArm->AddLocalRotation(FRotator(inputValue.Y * rotationSpeed, 0.0f, 0.0f));
+	AddControllerYawInput(inputValue.X * rotationSpeed);
 
 	//Clamp rotation
 	FRotator currentRotation = SpringArm->GetRelativeRotation();

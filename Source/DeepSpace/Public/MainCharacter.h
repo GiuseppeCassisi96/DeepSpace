@@ -9,6 +9,8 @@
 #include "InputMappingContext.h"
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
+#include "Engine/Engine.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Components/InputComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -44,11 +46,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RotationAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
-	float movementSpeed = 40.0f;
+	float movementSpeed = 0.3f;
 	UPROPERTY(EditAnywhere, Category = "Input")
-	float rotationSpeed = 12.0f;
+	float rotationSpeed = 0.1f;
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent;
+	float forwardVelocity;
+	bool isCrouch, isMovementLeft, isMovementRight, isMovementBack;
+	float myDeltaTime;
+	
 
 protected:
 	// Called when the game starts or when spawned
