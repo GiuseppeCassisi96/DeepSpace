@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "Engine/Engine.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Animation/AnimInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "Components/InputComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,6 +34,7 @@ public:
 	void Move(const FInputActionValue& actionValue);
 	void Rotation(const FInputActionValue& actionValue);
 	void Crouch(const FInputActionValue& actionValue);
+	void Aim(const FInputActionValue& actionValue);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	UCameraComponent* Camera;
@@ -49,15 +51,26 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* CrouchAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* AimAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
 	float movementSpeed = 0.3f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float rotationSpeed = 0.1f;
+	UPROPERTY(EditDefaultsOnly, Category = "Animations")
+	UAnimMontage* aimMontage;
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent;
+	UPROPERTY()
+	UAnimInstance* AnimInstance;
 	float forwardVelocity;
 	bool isCrouch, isMovementLeft, isMovementRight, isMovementBack, isCrouchMovementLeft,
-	isCrouchMovementRight, isCrouchMovementBack;
+	isCrouchMovementRight, isCrouchMovementBack, isAiming;
 	float myDeltaTime;
+	FTransform spineTrasform;
+	FRotator spineRotation;
+	float springArmLenght;
+	
+	
 	
 
 protected:

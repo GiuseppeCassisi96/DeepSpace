@@ -3,6 +3,7 @@
 
 #include "MainCharacter.h"
 
+#include "Components/SkeletalMeshComponent.h"
 
 
 // Sets default values
@@ -17,7 +18,7 @@ AMainCharacter::AMainCharacter()
 		SpringArm->SetupAttachment(GetRootComponent());
 	}
 	Camera->SetupAttachment(SpringArm);
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -40,7 +41,11 @@ void AMainCharacter::BeginPlay()
 		bUseControllerRotationPitch = true;
 		bUseControllerRotationYaw = true;
 	}
-	
+	USkeletalMeshComponent* CharMesh = GetMesh();
+	int32 index = CharMesh->GetBoneIndex("Spine");
+	spineTrasform = CharMesh->GetBoneSpaceTransforms()[index];
+	AnimInstance = CharMesh->GetAnimInstance();
+	springArmLenght = SpringArm->TargetArmLength;
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -59,6 +64,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AMainCharacter::Rotation);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMainCharacter::Crouch);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AMainCharacter::Aim);
 	}
 }
 
@@ -126,6 +132,12 @@ void AMainCharacter::Rotation(const FInputActionValue& actionValue)
 	FRotator currentRotation = SpringArm->GetRelativeRotation();
 	float pitch = FMath::Clamp(currentRotation.Pitch, -50.0f, 20.0f);
 	SpringArm->SetRelativeRotation(FRotator(pitch, currentRotation.Yaw, currentRotation.Roll));
+	if(isAiming)
+	{
+		spineRotation = FRotator(0.0f, 0.0f,
+			-pitch );
+	}
+	
 }
 
 void AMainCharacter::Crouch(const FInputActionValue& actionValue)
@@ -136,6 +148,21 @@ void AMainCharacter::Crouch(const FInputActionValue& actionValue)
 	isCrouchMovementRight = false;
 	isCrouchMovementLeft = false;
 	isCrouchMovementBack = false;
+}
+
+void AMainCharacter::Aim(const FInputActionValue& actionValue)
+{
+	isAiming = !isAiming;
+	AnimInstance->Montage_JumpToSection("Aim");
+	AnimInstance->Montage_Play(aimMontage);
+	SpringArm->TargetArmLength = 50.0f;
+	if(!isAiming)
+	{
+		AnimInstance->Montage_Stop(0.0f, aimMontage);
+		spineRotation = FRotator(0.0f, 0.0f,
+			3.63f);
+		SpringArm->TargetArmLength = springArmLenght;
+	}
 }
 
 

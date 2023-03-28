@@ -21,5 +21,7 @@ void UMainAnimInstance::UpdateAnimProperties()
 		isCrouchMovementLeft = MainCharacter->isCrouchMovementLeft;
 		isCrouchMovementRight = MainCharacter->isCrouchMovementRight;
 		isCrouchMovementBack = MainCharacter->isCrouchMovementBack;
+		isAiming = MainCharacter->isAiming;
+		spineRotation = MainCharacter->spineRotation;
 	}
 }

@@ -36,4 +36,8 @@ public:
 	bool isCrouchMovementRight;
 	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
 	bool isCrouchMovementBack;
+	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
+	bool isAiming;
+	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
+	FRotator spineRotation;
 };
