@@ -3,6 +3,9 @@
 
 #include "MainCharacter.h"
 
+#include "Components/SkeletalMeshComponent.h"
+
+
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
@@ -15,7 +18,7 @@ AMainCharacter::AMainCharacter()
 		SpringArm->SetupAttachment(GetRootComponent());
 	}
 	Camera->SetupAttachment(SpringArm);
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -38,12 +41,18 @@ void AMainCharacter::BeginPlay()
 		bUseControllerRotationPitch = true;
 		bUseControllerRotationYaw = true;
 	}
-	
+	USkeletalMeshComponent* CharMesh = GetMesh();
+	int32 index = CharMesh->GetBoneIndex("Spine");
+	spineTrasform = CharMesh->GetBoneSpaceTransforms()[index];
+	AnimInstance = CharMesh->GetAnimInstance();
+	springArmLenght = SpringArm->TargetArmLength;
+	startMovementSpeed = movementSpeed;
 }
 
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	forwardVelocity = GetMovementComponent()->Velocity.Length();
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -55,31 +64,122 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		//I'm binding the input action to a specific function
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AMainCharacter::Rotation);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMainCharacter::Crouch);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AMainCharacter::Aim);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMainCharacter::Run);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMainCharacter::Run);
 	}
 }
 
 void AMainCharacter::Move(const FInputActionValue& actionValue)
 {
 	FVector2D inputValue = actionValue.Get<FVector2D>();
-	inputValue *= movementSpeed;
 	FVector forwardDirection = GetActorForwardVector();
 	FVector rightDirection = GetActorRightVector();
 	FVector direction = forwardDirection * inputValue.X + rightDirection * inputValue.Y;
-	FVector movement = direction * GetWorld()->GetDeltaSeconds();
+	rightMovementValue = inputValue.Y;
+	forwardMovementValue = inputValue.X;
+	if(inputValue.Y > 0.0f)
+	{
+		isMovementRight = true;
+		isMovementLeft = false;
+		if(isCrouch)
+		{
+			isMovementRight = false;
+			isCrouchMovementRight = true;
+			isCrouchMovementLeft = false;
+		}
+	}
+	else if (inputValue.Y < 0.0f)
+	{
+		isMovementRight = false;
+		isMovementLeft = true;
+		if (isCrouch)
+		{
+			isMovementLeft = false;
+			isCrouchMovementRight = false;
+			isCrouchMovementLeft = true;
+		}
+	}
+	else
+	{
+		isMovementRight = false;
+		isMovementLeft = false;
+		isCrouchMovementRight = false;
+		isCrouchMovementLeft = false;
+	}
+	if(inputValue.X < 0)
+	{
+		isMovementBack = true;
+		if (isCrouch)
+		{
+			isMovementBack = false;
+			isCrouchMovementBack = true;
+		}
+	}
+	else
+	{
+		isMovementBack = false;
+		isCrouchMovementBack = false;
+	}
+
+	FVector movement = direction * movementSpeed;
 	AddMovementInput(movement);
 }
 
 void AMainCharacter::Rotation(const FInputActionValue& actionValue)
 {
-	float deltaTime = GetWorld()->GetDeltaSeconds();
 	FVector2D inputValue = actionValue.Get<FVector2D>();
-	SpringArm->AddLocalRotation(FRotator(inputValue.Y * rotationSpeed * deltaTime, 0.0f, 0.0f));
-	AddControllerYawInput(inputValue.X * rotationSpeed * deltaTime);
+	SpringArm->AddLocalRotation(FRotator(inputValue.Y * rotationSpeed, 0.0f, 0.0f));
+	AddControllerYawInput(inputValue.X * rotationSpeed);
 
 	//Clamp rotation
 	FRotator currentRotation = SpringArm->GetRelativeRotation();
 	float pitch = FMath::Clamp(currentRotation.Pitch, -50.0f, 20.0f);
 	SpringArm->SetRelativeRotation(FRotator(pitch, currentRotation.Yaw, currentRotation.Roll));
+	if(isAiming)
+	{
+		spineRotation = FRotator(0.0f, 0.0f,
+			-pitch );
+	}
+	
+}
+
+void AMainCharacter::Crouch(const FInputActionValue& actionValue)
+{
+	isCrouch = !isCrouch;
+	isMovementRight = false;
+	isMovementLeft = false;
+	isCrouchMovementRight = false;
+	isCrouchMovementLeft = false;
+	isCrouchMovementBack = false;
+}
+
+void AMainCharacter::Aim(const FInputActionValue& actionValue)
+{
+	isAiming = !isAiming;
+	AnimInstance->Montage_JumpToSection("Aim");
+	AnimInstance->Montage_Play(aimMontage);
+	SpringArm->TargetArmLength = 50.0f;
+	if(!isAiming)
+	{
+		AnimInstance->Montage_Stop(0.0f, aimMontage);
+		spineRotation = FRotator(0.0f, 0.0f,
+			3.63f);
+		SpringArm->TargetArmLength = springArmLenght;
+	}
+}
+
+void AMainCharacter::Run(const FInputActionValue& actionValue)
+{
+	if(actionValue.Get<bool>() && forwardMovementValue > 0 && rightMovementValue == 0 && !isCrouch)
+	{
+		movementSpeed =  1.7f;
+	}
+	else
+	{
+		movementSpeed = startMovementSpeed;
+	}
 }
 
 
