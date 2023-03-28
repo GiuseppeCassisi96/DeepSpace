@@ -46,6 +46,7 @@ void AMainCharacter::BeginPlay()
 	spineTrasform = CharMesh->GetBoneSpaceTransforms()[index];
 	AnimInstance = CharMesh->GetAnimInstance();
 	springArmLenght = SpringArm->TargetArmLength;
+	startMovementSpeed = movementSpeed;
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -65,6 +66,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AMainCharacter::Rotation);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMainCharacter::Crouch);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AMainCharacter::Aim);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMainCharacter::Run);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMainCharacter::Run);
 	}
 }
 
@@ -74,6 +77,8 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 	FVector forwardDirection = GetActorForwardVector();
 	FVector rightDirection = GetActorRightVector();
 	FVector direction = forwardDirection * inputValue.X + rightDirection * inputValue.Y;
+	rightMovementValue = inputValue.Y;
+	forwardMovementValue = inputValue.X;
 	if(inputValue.Y > 0.0f)
 	{
 		isMovementRight = true;
@@ -162,6 +167,18 @@ void AMainCharacter::Aim(const FInputActionValue& actionValue)
 		spineRotation = FRotator(0.0f, 0.0f,
 			3.63f);
 		SpringArm->TargetArmLength = springArmLenght;
+	}
+}
+
+void AMainCharacter::Run(const FInputActionValue& actionValue)
+{
+	if(actionValue.Get<bool>() && forwardMovementValue > 0 && rightMovementValue == 0 && !isCrouch)
+	{
+		movementSpeed =  1.7f;
+	}
+	else
+	{
+		movementSpeed = startMovementSpeed;
 	}
 }
 

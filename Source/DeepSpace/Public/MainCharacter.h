@@ -35,6 +35,7 @@ public:
 	void Rotation(const FInputActionValue& actionValue);
 	void Crouch(const FInputActionValue& actionValue);
 	void Aim(const FInputActionValue& actionValue);
+	void Run(const FInputActionValue& actionValue);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	UCameraComponent* Camera;
@@ -53,6 +54,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AimAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* RunAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
 	float movementSpeed = 0.3f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float rotationSpeed = 0.1f;
@@ -64,11 +67,13 @@ public:
 	UAnimInstance* AnimInstance;
 	float forwardVelocity;
 	bool isCrouch, isMovementLeft, isMovementRight, isMovementBack, isCrouchMovementLeft,
-	isCrouchMovementRight, isCrouchMovementBack, isAiming;
+	isCrouchMovementRight, isCrouchMovementBack, isAiming, isRun;
 	float myDeltaTime;
 	FTransform spineTrasform;
 	FRotator spineRotation;
 	float springArmLenght;
+	float startMovementSpeed;
+	float forwardMovementValue, rightMovementValue;
 	
 	
 	
