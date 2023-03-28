@@ -58,6 +58,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		//I'm binding the input action to a specific function
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AMainCharacter::Rotation);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AMainCharacter::Crouch);
 	}
 }
 
@@ -71,24 +72,44 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 	{
 		isMovementRight = true;
 		isMovementLeft = false;
+		if(isCrouch)
+		{
+			isMovementRight = false;
+			isCrouchMovementRight = true;
+			isCrouchMovementLeft = false;
+		}
 	}
 	else if (inputValue.Y < 0.0f)
 	{
 		isMovementRight = false;
 		isMovementLeft = true;
+		if (isCrouch)
+		{
+			isMovementLeft = false;
+			isCrouchMovementRight = false;
+			isCrouchMovementLeft = true;
+		}
 	}
 	else
 	{
 		isMovementRight = false;
 		isMovementLeft = false;
+		isCrouchMovementRight = false;
+		isCrouchMovementLeft = false;
 	}
 	if(inputValue.X < 0)
 	{
 		isMovementBack = true;
+		if (isCrouch)
+		{
+			isMovementBack = false;
+			isCrouchMovementBack = true;
+		}
 	}
 	else
 	{
 		isMovementBack = false;
+		isCrouchMovementBack = false;
 	}
 
 	FVector movement = direction * movementSpeed;
@@ -105,6 +126,16 @@ void AMainCharacter::Rotation(const FInputActionValue& actionValue)
 	FRotator currentRotation = SpringArm->GetRelativeRotation();
 	float pitch = FMath::Clamp(currentRotation.Pitch, -50.0f, 20.0f);
 	SpringArm->SetRelativeRotation(FRotator(pitch, currentRotation.Yaw, currentRotation.Roll));
+}
+
+void AMainCharacter::Crouch(const FInputActionValue& actionValue)
+{
+	isCrouch = !isCrouch;
+	isMovementRight = false;
+	isMovementLeft = false;
+	isCrouchMovementRight = false;
+	isCrouchMovementLeft = false;
+	isCrouchMovementBack = false;
 }
 
 

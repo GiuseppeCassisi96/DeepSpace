@@ -32,6 +32,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void Move(const FInputActionValue& actionValue);
 	void Rotation(const FInputActionValue& actionValue);
+	void Crouch(const FInputActionValue& actionValue);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	UCameraComponent* Camera;
@@ -46,13 +47,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RotationAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* CrouchAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
 	float movementSpeed = 0.3f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float rotationSpeed = 0.1f;
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent;
 	float forwardVelocity;
-	bool isCrouch, isMovementLeft, isMovementRight, isMovementBack;
+	bool isCrouch, isMovementLeft, isMovementRight, isMovementBack, isCrouchMovementLeft,
+	isCrouchMovementRight, isCrouchMovementBack;
 	float myDeltaTime;
 	
 

@@ -18,5 +18,8 @@ void UMainAnimInstance::UpdateAnimProperties()
 		isMovementLeft = MainCharacter->isMovementLeft;
 		isMovementRight = MainCharacter->isMovementRight;
 		isMovementBack = MainCharacter->isMovementBack;
+		isCrouchMovementLeft = MainCharacter->isCrouchMovementLeft;
+		isCrouchMovementRight = MainCharacter->isCrouchMovementRight;
+		isCrouchMovementBack = MainCharacter->isCrouchMovementBack;
 	}
 }

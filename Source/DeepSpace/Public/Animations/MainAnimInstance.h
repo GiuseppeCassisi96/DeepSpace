@@ -30,4 +30,10 @@ public:
 	bool isMovementRight;
 	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
 	bool isMovementBack;
+	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
+	bool isCrouchMovementLeft;
+	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
+	bool isCrouchMovementRight;
+	UPROPERTY(BlueprintReadOnly, Category = "AnimProperties")
+	bool isCrouchMovementBack;
 };
