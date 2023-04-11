@@ -36,6 +36,7 @@ public:
 	void Crouch(const FInputActionValue& actionValue);
 	void Aim(const FInputActionValue& actionValue);
 	void Run(const FInputActionValue& actionValue);
+	TArray<FVector> GetMainCharacterBones();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	UCameraComponent* Camera;
@@ -74,6 +75,7 @@ public:
 	float springArmLenght;
 	float startMovementSpeed;
 	float forwardMovementValue, rightMovementValue;
+	TArray<FVector> bones;
 	
 	
 	

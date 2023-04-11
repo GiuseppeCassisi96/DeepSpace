@@ -47,6 +47,13 @@ void AMainCharacter::BeginPlay()
 	AnimInstance = CharMesh->GetAnimInstance();
 	springArmLenght = SpringArm->TargetArmLength;
 	startMovementSpeed = movementSpeed;
+	bones.Add(GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace));
+	bones.Add(GetMesh()->GetBoneLocation("LeftShoulder", EBoneSpaces::WorldSpace));
+	bones.Add(GetMesh()->GetBoneLocation("RightShoulder", EBoneSpaces::WorldSpace));
+	bones.Add(GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace));
+	bones.Add(GetMesh()->GetBoneLocation("LeftLeg", EBoneSpaces::WorldSpace));
+	bones.Add(GetMesh()->GetBoneLocation("RightLeg", EBoneSpaces::WorldSpace));
+
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -180,6 +187,17 @@ void AMainCharacter::Run(const FInputActionValue& actionValue)
 	{
 		movementSpeed = startMovementSpeed;
 	}
+}
+
+TArray<FVector> AMainCharacter::GetMainCharacterBones()
+{
+	bones[0] = GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace);
+	bones[1] = GetMesh()->GetBoneLocation("LeftShoulder", EBoneSpaces::WorldSpace);
+	bones[2] = GetMesh()->GetBoneLocation("RightShoulder", EBoneSpaces::WorldSpace);
+	bones[3] = GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace);
+	bones[4] = GetMesh()->GetBoneLocation("LeftLeg", EBoneSpaces::WorldSpace);
+	bones[5] = GetMesh()->GetBoneLocation("RightLeg", EBoneSpaces::WorldSpace);
+	return bones;
 }
 
 
