@@ -10,8 +10,9 @@ AMainEnemy::AMainEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 	AlfredAI = CreateDefaultSubobject<UAlfred>(TEXT("AlfredAI"));
 	ViewBox = CreateDefaultSubobject<UBoxComponent>(TEXT("ViewBox"));
-	ViewBox->SetupAttachment(GetMesh(),"HeadSocket");
-	AIController = CreateDefaultSubobject<AAIController>(TEXT("AI"));
+	ViewBox->SetupAttachment(RootComponent);
+	HearingSphere = CreateDefaultSubobject<USphereComponent>(TEXT("HearingSphere"));
+	HearingSphere->SetupAttachment(RootComponent);
 	
 }
 

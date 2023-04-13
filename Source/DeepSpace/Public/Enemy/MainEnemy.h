@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "AI/Alfred.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "MainEnemy.generated.h"
 
@@ -26,8 +27,8 @@ public:
 	UAlfred* AlfredAI;
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;
-	UPROPERTY(EditDefaultsOnly, Category= "AI")
-	AAIController* AIController;
+	UPROPERTY(EditDefaultsOnly, Category = "HearingSphere")
+	USphereComponent* HearingSphere;
 
 protected:
 	// Called when the game starts or when spawned

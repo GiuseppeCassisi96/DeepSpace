@@ -14,10 +14,19 @@
 #include "Animation/AnimInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "Components/InputComponent.h"
+#include "Items/ThrowableItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+
+enum class PlayerAnimState
+{
+	Idle = 0,
+	Walk = 300,
+	Run = 500,
+	Crouch = 0,
+};
 UCLASS()
 class DEEPSPACE_API AMainCharacter : public ACharacter
 {
@@ -36,7 +45,10 @@ public:
 	void Crouch(const FInputActionValue& actionValue);
 	void Aim(const FInputActionValue& actionValue);
 	void Run(const FInputActionValue& actionValue);
+	void Throw(const FInputActionValue& actionValue);
 	TArray<FVector> GetMainCharacterBones();
+	void SetState(PlayerAnimState newState);
+	
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	UCameraComponent* Camera;
@@ -57,6 +69,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RunAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* ThrowAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
 	float movementSpeed = 0.3f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float rotationSpeed = 0.1f;
@@ -66,6 +80,8 @@ public:
 	UCharacterMovementComponent* MovementComponent;
 	UPROPERTY()
 	UAnimInstance* AnimInstance;
+	UPROPERTY(EditDefaultsOnly, Category= "Item")
+	TSubclassOf<AActor> ThrowableObj;
 	float forwardVelocity;
 	bool isCrouch, isMovementLeft, isMovementRight, isMovementBack, isCrouchMovementLeft,
 	isCrouchMovementRight, isCrouchMovementBack, isAiming, isRun;
@@ -76,6 +92,8 @@ public:
 	float startMovementSpeed;
 	float forwardMovementValue, rightMovementValue;
 	TArray<FVector> bones;
+	PlayerAnimState state;
+	
 	
 	
 	

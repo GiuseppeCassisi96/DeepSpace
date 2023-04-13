@@ -4,6 +4,7 @@
 #include "MainCharacter.h"
 
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/PlayerState.h"
 
 
 // Sets default values
@@ -75,6 +76,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AMainCharacter::Aim);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMainCharacter::Run);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMainCharacter::Run);
+		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &AMainCharacter::Throw);
 	}
 }
 
@@ -86,23 +88,29 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 	FVector direction = forwardDirection * inputValue.X + rightDirection * inputValue.Y;
 	rightMovementValue = inputValue.Y;
 	forwardMovementValue = inputValue.X;
+
+	//Right movement
 	if(inputValue.Y > 0.0f)
 	{
 		isMovementRight = true;
 		isMovementLeft = false;
+		SetState(PlayerAnimState::Walk);
 		if(isCrouch)
 		{
 			isMovementRight = false;
 			isCrouchMovementRight = true;
 			isCrouchMovementLeft = false;
+			SetState(PlayerAnimState::Crouch);
 		}
 	}
 	else if (inputValue.Y < 0.0f)
 	{
+		SetState(PlayerAnimState::Walk);
 		isMovementRight = false;
 		isMovementLeft = true;
 		if (isCrouch)
 		{
+			SetState(PlayerAnimState::Crouch);
 			isMovementLeft = false;
 			isCrouchMovementRight = false;
 			isCrouchMovementLeft = true;
@@ -115,13 +123,27 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 		isCrouchMovementRight = false;
 		isCrouchMovementLeft = false;
 	}
+
+	//Forward movement
 	if(inputValue.X < 0)
 	{
+		SetState(PlayerAnimState::Walk);
 		isMovementBack = true;
 		if (isCrouch)
 		{
+			SetState(PlayerAnimState::Crouch);
 			isMovementBack = false;
 			isCrouchMovementBack = true;
+		}
+	}
+	else if(inputValue.X > 0)
+	{
+		SetState(PlayerAnimState::Walk);
+		isMovementBack = false;
+		isCrouchMovementBack = false;
+		if (isCrouch)
+		{
+			SetState(PlayerAnimState::Crouch);
 		}
 	}
 	else
@@ -129,7 +151,6 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 		isMovementBack = false;
 		isCrouchMovementBack = false;
 	}
-
 	FVector movement = direction * movementSpeed;
 	AddMovementInput(movement);
 }
@@ -182,11 +203,21 @@ void AMainCharacter::Run(const FInputActionValue& actionValue)
 	if(actionValue.Get<bool>() && forwardMovementValue > 0 && rightMovementValue == 0 && !isCrouch)
 	{
 		movementSpeed =  1.7f;
+		SetState(PlayerAnimState::Run);
 	}
 	else
 	{
 		movementSpeed = startMovementSpeed;
+		SetState(PlayerAnimState::Run);
 	}
+}
+
+void AMainCharacter::Throw(const FInputActionValue& actionValue)
+{
+	FVector location = GetActorLocation() + GetActorForwardVector() * 100.0f;
+	FRotator rotation = FRotator::ZeroRotator;
+	AThrowableItem* obj = Cast<AThrowableItem>(GetWorld()->SpawnActor(ThrowableObj,&location,&rotation));
+	obj->ItemMesh->AddForce(300000.0f * GetActorForwardVector());
 }
 
 TArray<FVector> AMainCharacter::GetMainCharacterBones()
@@ -198,6 +229,11 @@ TArray<FVector> AMainCharacter::GetMainCharacterBones()
 	bones[4] = GetMesh()->GetBoneLocation("LeftLeg", EBoneSpaces::WorldSpace);
 	bones[5] = GetMesh()->GetBoneLocation("RightLeg", EBoneSpaces::WorldSpace);
 	return bones;
+}
+
+void AMainCharacter::SetState(PlayerAnimState newState)
+{
+	state = newState;
 }
 
 

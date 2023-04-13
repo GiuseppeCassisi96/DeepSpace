@@ -11,9 +11,15 @@ void FuzzyLogic::Fuzzification(const float maxValue, const float value)
 	Set.membershipValue = membValue;
 }
 
-bool FuzzyLogic::Defuzzification(const FuzzySet set, const float cutOffValue)
+bool FuzzyLogic::Defuzzification(const float cutOffValue)
 {
-	return set.membershipValue > cutOffValue;
+	return Set.membershipValue > cutOffValue;
+}
+
+
+float FuzzyLogic::operator!()
+{
+	return  1 - Set.membershipValue;
 }
 
 

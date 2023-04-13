@@ -24,5 +24,6 @@ public:
 	 * @param value The numeric value
 	 */
 	void Fuzzification(const float maxValue, const float value);
-	bool Defuzzification(const FuzzySet set, const float cutOffValue);
+	bool Defuzzification(const float cutOffValue);
+	float operator!();
 };
