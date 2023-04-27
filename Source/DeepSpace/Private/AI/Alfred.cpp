@@ -27,6 +27,7 @@ void UAlfred::BeginPlay()
 		owner->HearingSphere->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartHearSensors);
 		owner->HearingSphere->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopHearSensors);
 		navSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+		AlfredFSM = NewObject<UAlfredFSM>();
 	}
 }
 
@@ -45,6 +46,8 @@ void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult:
 		//Pass to warning state: He has seen the player, but now doesn't see him anymore
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f,
 			FColor::Red, TEXT("WARNING AFTER SEEN"));
+		AlfredFSM->GoToNewState(EEnemyState::Warning);
+		//AlfredFSM->RunActionOfCurrentState();
 		bHasSeen = false;
 	}
 }
@@ -71,6 +74,8 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 		if (NonHearSet.Defuzzification(0.30))
 		{
 			//Pass to hear state: The enemy hears something !!
+			AlfredFSM->GoToNewState(EEnemyState::Hearing);
+			//AlfredFSM->RunActionOfCurrentState();
 			//@todo Move npc movement in Behavior Tree. 
 			const FVector newLocationToReach = hitLocation;
 			ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);
@@ -118,6 +123,8 @@ void UAlfred::EnemyView()
 	if (SeeSet.Defuzzification( 0.65f))
 	{
 		//Pass to attack state: The enemy sees you !!
+		AlfredFSM->GoToNewState(EEnemyState::Attack);
+		//AlfredFSM->RunActionOfCurrentState();
 		//@todo Move npc movement in Behavior Tree. 
 		const FVector newLocationToReach = EnemyData.PlayerCharacter->GetActorLocation();
 		ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);
@@ -126,6 +133,8 @@ void UAlfred::EnemyView()
 	else if (SeeSet.Defuzzification( 0.39f))
 	{
 		//Pass to warning state: The enemy has seen something and getting worried
+		AlfredFSM->GoToNewState(EEnemyState::Warning);
+		//AlfredFSM->RunActionOfCurrentState();
 		if(!bHasSeen)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Warning"));
@@ -195,6 +204,8 @@ void UAlfred::EnemyHearing()
 			if (NonHearSet.Defuzzification(0.60))
 			{
 				//Pass to hear state: The enemy hears something !!
+				AlfredFSM->GoToNewState(EEnemyState::Hearing);
+				//AlfredFSM->RunActionOfCurrentState();
 				//@todo Move npc movement in Behavior Tree. 
 				const FVector newLocationToReach = EnemyData.PlayerCharacter->GetActorLocation();
 				ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);
