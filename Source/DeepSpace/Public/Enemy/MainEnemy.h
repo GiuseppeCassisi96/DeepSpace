@@ -29,6 +29,7 @@ public:
 	UBoxComponent* ViewBox;
 	UPROPERTY(EditDefaultsOnly, Category = "HearingSphere")
 	USphereComponent* HearingSphere;
+	
 
 protected:
 	// Called when the game starts or when spawned

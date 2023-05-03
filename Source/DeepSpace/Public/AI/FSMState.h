@@ -6,7 +6,7 @@
 #include "ActionFailException.h"
 #include "UObject/NoExportTypes.h"
 #include "FSMState.generated.h"
-DECLARE_DELEGATE_RetVal(bool, FActionState);
+
 UENUM()
 enum class EEnemyState
 {
@@ -16,6 +16,9 @@ enum class EEnemyState
 	Attack = 3,
 	Ally = 4
 };
+
+
+DECLARE_DELEGATE_RetVal(int, FActionState);
 /**
  * 
  */
@@ -25,7 +28,7 @@ class DEEPSPACE_API UFSMState : public UObject
 	GENERATED_BODY()
 public:
 	UFSMState() = default;
-	bool RunAction();
+	int RunAction();
 	FActionState Action;
 protected:
 	ActionFailException Exception;

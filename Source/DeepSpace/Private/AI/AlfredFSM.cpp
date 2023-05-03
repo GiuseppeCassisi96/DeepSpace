@@ -3,10 +3,6 @@
 
 #include "AI/AlfredFSM.h"
 
-#include <iostream>
-
-#include "Engine/Engine.h"
-#include "GameFramework/Actor.h"
 
 UAlfredFSM::UAlfredFSM()
 {
@@ -16,15 +12,19 @@ UAlfredFSM::UAlfredFSM()
 	AttackState = NewObject<UFSMState>();
 	AllyState = NewObject<UFSMState>();
 
+	AttackBT = NewObject<UAttackBT>();
+	CalmBT = NewObject<UCalmBT>();
+
 	States.Add(EEnemyState::Calm, CalmState);
 	States.Add(EEnemyState::Hearing, HearingState);
 	States.Add(EEnemyState::Warning, WarningState);
 	States.Add(EEnemyState::Attack, AttackState);
 	States.Add(EEnemyState::Ally, AllyState);
 
+	States[EEnemyState::Calm]->Action.BindUFunction(CalmBT, "RunTree");
+
 	InitialState = EEnemyState::Calm;
 	CurrentState = InitialState;
-	//RunActionOfCurrentState();
 }
 
 TMap<EEnemyState, UFSMState*>& UAlfredFSM::GetStates()
@@ -33,7 +33,7 @@ TMap<EEnemyState, UFSMState*>& UAlfredFSM::GetStates()
 }
 
 
-bool UAlfredFSM::RunActionOfCurrentState()
+int UAlfredFSM::RunActionOfCurrentState()
 {
 	try
 	{
@@ -42,7 +42,8 @@ bool UAlfredFSM::RunActionOfCurrentState()
 	catch (ActionFailException e)
 	{
 		std::cout <<  e.what() << "\n";
-		return false;
+		return -1;
 	}
 	
 }
+

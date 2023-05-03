@@ -11,6 +11,7 @@ UAlfred::UAlfred()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	
 }
 
 // Called when the game starts
@@ -28,6 +29,8 @@ void UAlfred::BeginPlay()
 		owner->HearingSphere->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopHearSensors);
 		navSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 		AlfredFSM = NewObject<UAlfredFSM>();
+		AlfredFSM->CalmBT->InitTree(owner, navSys);
+		AlfredFSM->RunActionOfCurrentState();
 	}
 }
 
@@ -37,6 +40,8 @@ void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	EnemyView();
 	EnemyHearing();
+	
+	
 }
 
 void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)

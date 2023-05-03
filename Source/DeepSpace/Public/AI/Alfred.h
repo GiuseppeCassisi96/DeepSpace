@@ -48,8 +48,6 @@ public:
 	void EnemyHearing();
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	UPROPERTY(Category = "FSM", BlueprintReadWrite, EditAnywhere)
-	TSoftClassPtr<UAlfredFSM> AlfredClass;
 	
 protected:
 	// Called when the game starts
@@ -63,7 +61,7 @@ protected:
 	TArray<AActor*> actorToIgnore;
 	UPROPERTY()
 	UNavigationSystemV1* navSys;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category= "FSM")
 	UAlfredFSM* AlfredFSM;
 	
 

@@ -5,11 +5,11 @@
 
 
 
-bool UFSMState::RunAction()
+int UFSMState::RunAction()
 {
-	if(Action.Execute())
+	if(Action.Execute() == -1)
 	{
-		return true;
+		throw Exception;
 	}
-	throw Exception;
+	return 0;
 }
