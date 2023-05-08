@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "UObject/NoExportTypes.h"
-#include "GameFramework/Character.h"
 #include "SequenceBT.h"
+#include "AlfredBT.h"
 #include "TaskBT.h"
 #include "UntilFailBT.h"
 #include "TimerManager.h"
@@ -17,7 +17,7 @@
  * 
  */
 UCLASS()
-class DEEPSPACE_API UCalmBT : public UObject
+class DEEPSPACE_API UCalmBT : public UAlfredBT
 {
 	GENERATED_BODY()
 public:
@@ -27,12 +27,13 @@ public:
 	UFUNCTION()
 	int GoToRandPosition();
 	UFUNCTION()
-	int RunTree();
-	void InitTree(ACharacter* owner, UNavigationSystemV1* navSys);
+	virtual int RunTree() override;
+	virtual void InitTree(ACharacter* owner, UNavigationSystemV1* navSys) override;
 	UFUNCTION()
 	int ExeTreeInTimeIntervall();
 	UFUNCTION()
 	void ResetTimer(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	virtual void StopTree() override;
 	UPROPERTY()
 	USequenceBT* firstSequence;
 	UPROPERTY()
@@ -41,18 +42,7 @@ public:
 	UTaskBT* secondTask;
 	UPROPERTY()
 	UUntilFailBT* CalmUntilFail;
-	UPROPERTY()
-	UTaskBT* RootTask;
-	UPROPERTY()
-	UNavigationSystemV1* NavSys;
-	UPROPERTY()
-	ACharacter* ownerBT;
-	UPROPERTY()
-	AAIController* AIController;
 	FTimerManager TimerManager;
 	FTimerHandle TimerHandle;
 	FTimerDelegate TimerDelegate;
-	FNavLocation randLocation;
-	int TreeExeCode;
-
 };

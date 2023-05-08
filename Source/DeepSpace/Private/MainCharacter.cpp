@@ -54,7 +54,7 @@ void AMainCharacter::BeginPlay()
 	bones.Add(GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace));
 	bones.Add(GetMesh()->GetBoneLocation("LeftLeg", EBoneSpaces::WorldSpace));
 	bones.Add(GetMesh()->GetBoneLocation("RightLeg", EBoneSpaces::WorldSpace));
-
+	OnTakeAnyDamage.AddDynamic(this, &AMainCharacter::TakeDamageFromEnemy);
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -234,6 +234,12 @@ TArray<FVector> AMainCharacter::GetMainCharacterBones()
 void AMainCharacter::SetState(PlayerAnimState newState)
 {
 	state = newState;
+}
+
+void AMainCharacter::TakeDamageFromEnemy(AActor* Actor, float damage, const UDamageType* type, AController* Contr,
+	AActor* a)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ATTACK"));
 }
 
 

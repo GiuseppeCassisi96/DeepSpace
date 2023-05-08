@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "TaskBT.generated.h"
 
+
 /**
  * 
  */
@@ -17,5 +18,7 @@ class DEEPSPACE_API UTaskBT : public UObject
 public:
 	UTaskBT() = default;
 	virtual int RunTask();
+	virtual void BindTask(UObject* InUserObject, const FName& InFunctionName);
+private:
 	FTask Task;
 };

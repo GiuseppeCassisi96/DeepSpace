@@ -48,6 +48,8 @@ public:
 	void Throw(const FInputActionValue& actionValue);
 	TArray<FVector> GetMainCharacterBones();
 	void SetState(PlayerAnimState newState);
+	UFUNCTION()
+		void TakeDamageFromEnemy(AActor* Actor, float damage, const UDamageType* type, AController* Contr, AActor* a);
 	
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")

@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "FSMState.h"
-#include "BT/AttackBT.h"
-#include "BT/CalmBT.h"
+#include "BT/AlfredBTManager.h"
 #include <iostream>
 #include "Engine/Engine.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "UObject/NoExportTypes.h"
 #include "AlfredFSM.generated.h"
 
@@ -16,8 +16,8 @@
 /**
  * 
  */
-UCLASS()
-class DEEPSPACE_API UAlfredFSM : public UObject
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class DEEPSPACE_API UAlfredFSM : public UActorComponent
 {
 	GENERATED_BODY()
 public:
@@ -34,15 +34,12 @@ public:
 	 * @return returns -1 if the action fails, 0 otherwise
 	 */
 	int RunActionOfCurrentState();
+	void BindStates(UAlfredBTManager* BTManager);
 	EEnemyState CurrentState, InitialState;
 	UPROPERTY()
 	ACharacter* ownerFSM;
-	UPROPERTY()
-	UAttackBT* AttackBT;
-	UPROPERTY()
-	UCalmBT* CalmBT;
 protected:
-	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")
 	TMap<EEnemyState, UFSMState*> States;
 	UPROPERTY()
 	UFSMState* CalmState;

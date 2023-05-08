@@ -7,3 +7,8 @@ int UTaskBT::RunTask()
 {
 	return Task.Execute();
 }
+
+void UTaskBT::BindTask(UObject* InUserObject, const FName& InFunctionName)
+{
+	Task.BindUFunction(InUserObject, InFunctionName);
+}

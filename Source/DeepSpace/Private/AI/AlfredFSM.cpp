@@ -12,16 +12,11 @@ UAlfredFSM::UAlfredFSM()
 	AttackState = NewObject<UFSMState>();
 	AllyState = NewObject<UFSMState>();
 
-	AttackBT = NewObject<UAttackBT>();
-	CalmBT = NewObject<UCalmBT>();
-
 	States.Add(EEnemyState::Calm, CalmState);
 	States.Add(EEnemyState::Hearing, HearingState);
 	States.Add(EEnemyState::Warning, WarningState);
 	States.Add(EEnemyState::Attack, AttackState);
 	States.Add(EEnemyState::Ally, AllyState);
-
-	States[EEnemyState::Calm]->Action.BindUFunction(CalmBT, "RunTree");
 
 	InitialState = EEnemyState::Calm;
 	CurrentState = InitialState;
@@ -45,5 +40,11 @@ int UAlfredFSM::RunActionOfCurrentState()
 		return -1;
 	}
 	
+}
+
+void UAlfredFSM::BindStates(UAlfredBTManager* BTManager)
+{
+	States[EEnemyState::Calm]->Action.BindUFunction(BTManager->CalmBT, "RunTree");
+	States[EEnemyState::Attack]->Action.BindUFunction(BTManager->AttackBT, "RunTree");
 }
 

@@ -7,14 +7,14 @@
 #include "UObject/NoExportTypes.h"
 #include "FSMState.generated.h"
 
-UENUM()
-enum class EEnemyState
+UENUM(BlueprintType)
+enum class EEnemyState : uint8
 {
-	Calm = 0,
-	Hearing = 1,
-	Warning = 2,
-	Attack = 3,
-	Ally = 4
+	Calm,
+	Hearing,
+	Warning,
+	Attack,
+	Ally
 };
 
 

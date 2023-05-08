@@ -13,7 +13,6 @@ AMainEnemy::AMainEnemy()
 	ViewBox->SetupAttachment(RootComponent);
 	HearingSphere = CreateDefaultSubobject<USphereComponent>(TEXT("HearingSphere"));
 	HearingSphere->SetupAttachment(RootComponent);
-	
 }
 
 // Called when the game starts or when spawned
@@ -36,6 +35,7 @@ void AMainEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
 
 
 

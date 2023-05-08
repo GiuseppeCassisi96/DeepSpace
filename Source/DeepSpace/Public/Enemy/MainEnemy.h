@@ -23,13 +23,15 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	UPROPERTY(EditAnywhere, Category = "AI")
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	UAlfred* AlfredAI;
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;
 	UPROPERTY(EditDefaultsOnly, Category = "HearingSphere")
 	USphereComponent* HearingSphere;
-	
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<UDamageType> typeDamage;
 
 protected:
 	// Called when the game starts or when spawned

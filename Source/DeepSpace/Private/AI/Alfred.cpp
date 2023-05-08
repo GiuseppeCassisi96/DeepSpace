@@ -11,7 +11,8 @@ UAlfred::UAlfred()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	
+	AlfredFSM = CreateDefaultSubobject<UAlfredFSM>(TEXT("AlfredFSM"));
+	AlfredBTManager = CreateDefaultSubobject<UAlfredBTManager>(TEXT("AlfredBTManager"));
 }
 
 // Called when the game starts
@@ -28,8 +29,8 @@ void UAlfred::BeginPlay()
 		owner->HearingSphere->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartHearSensors);
 		owner->HearingSphere->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopHearSensors);
 		navSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-		AlfredFSM = NewObject<UAlfredFSM>();
-		AlfredFSM->CalmBT->InitTree(owner, navSys);
+		AlfredFSM->BindStates(AlfredBTManager);
+		AlfredBTManager->CalmBT->InitTree(owner, navSys);
 		AlfredFSM->RunActionOfCurrentState();
 	}
 }
@@ -79,11 +80,11 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 		if (NonHearSet.Defuzzification(0.30))
 		{
 			//Pass to hear state: The enemy hears something !!
-			AlfredFSM->GoToNewState(EEnemyState::Hearing);
-			//AlfredFSM->RunActionOfCurrentState();
+			/*AlfredFSM->GoToNewState(EEnemyState::Hearing);
+			AlfredFSM->RunActionOfCurrentState();*/
 			//@todo Move npc movement in Behavior Tree. 
-			const FVector newLocationToReach = hitLocation;
-			ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);
+			/*const FVector newLocationToReach = hitLocation;
+			ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);*/
 		}
 	}
 	
@@ -106,9 +107,13 @@ void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActo
 
 void UAlfred::EnemyView()
 {
-	 
+	 //CAST RAY
 	if(bIsPlayerInTheViewBox)
 	{
+		if(!AlfredBTManager->AttackBT->playerRefBT)
+		{
+			AlfredBTManager->AttackBT->InitTree(owner, navSys, EnemyData.PlayerCharacter, owner->typeDamage);
+		}
 		EnemyData.bonesOfPlayer = EnemyData.PlayerCharacter->GetMainCharacterBones();
 		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
 		for(auto boneLocation: EnemyData.bonesOfPlayer)
@@ -122,6 +127,8 @@ void UAlfred::EnemyView()
 			}
 		}
 	}
+
+	//ACTIONS BASED ON SEE COUNT
 	//I map the seeCount value into a membership value of my fuzzy set between 0 and 1
 	SeeSet.Fuzzification(6, seeCount);
 
@@ -129,17 +136,14 @@ void UAlfred::EnemyView()
 	{
 		//Pass to attack state: The enemy sees you !!
 		AlfredFSM->GoToNewState(EEnemyState::Attack);
-		//AlfredFSM->RunActionOfCurrentState();
-		//@todo Move npc movement in Behavior Tree. 
-		const FVector newLocationToReach = EnemyData.PlayerCharacter->GetActorLocation();
-		ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);
+		AlfredFSM->RunActionOfCurrentState();
 		bHasSeen = true;
 	}
 	else if (SeeSet.Defuzzification( 0.39f))
 	{
 		//Pass to warning state: The enemy has seen something and getting worried
-		AlfredFSM->GoToNewState(EEnemyState::Warning);
-		//AlfredFSM->RunActionOfCurrentState();
+		/*AlfredFSM->GoToNewState(EEnemyState::Warning);
+		AlfredFSM->RunActionOfCurrentState();*/
 		if(!bHasSeen)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Warning"));
@@ -209,11 +213,9 @@ void UAlfred::EnemyHearing()
 			if (NonHearSet.Defuzzification(0.60))
 			{
 				//Pass to hear state: The enemy hears something !!
-				AlfredFSM->GoToNewState(EEnemyState::Hearing);
-				//AlfredFSM->RunActionOfCurrentState();
-				//@todo Move npc movement in Behavior Tree. 
-				const FVector newLocationToReach = EnemyData.PlayerCharacter->GetActorLocation();
-				ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);
+				/*AlfredFSM->GoToNewState(EEnemyState::Hearing);
+				AlfredFSM->RunActionOfCurrentState();*/
+				////@todo Move npc movement in Behavior Tree. 
 			}
 		}
 	}
