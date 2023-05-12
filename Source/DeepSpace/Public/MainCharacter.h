@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Camera/CameraComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"

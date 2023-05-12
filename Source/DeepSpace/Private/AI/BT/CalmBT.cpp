@@ -8,88 +8,80 @@
 
 UCalmBT::UCalmBT()
 {
-	firstSequence = NewObject<USequenceBT>();
-	firstTask = NewObject<UTaskBT>();
-	secondTask = NewObject<UTaskBT>();
-	CalmUntilFail = NewObject<UUntilFailBT>();
-	CalmUntilFail->childTask = firstSequence;
-	RootTask = CalmUntilFail;
+	
 
-	firstTask->BindTask(this, TEXT("IsReachable"));
-	secondTask->BindTask(this, TEXT("GoToRandPosition"));
-
-	firstSequence->Tasks.Add(firstTask);
-	firstSequence->Tasks.Add(secondTask);
-
-	TimerDelegate.BindUFunction(this, TEXT("ExeTreeInTimeIntervall"));
-	bIsStopped = false;
+	UE_LOG(LogTemp, Warning, TEXT("UCalmBT::UCalmBT()"));
+	
 }
 
 //Condition
-int UCalmBT::IsReachable()
+ETaskExeState UCalmBT::IsReachable()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UCalmBT::IsReachable"))
 	if (NavSys->GetRandomReachablePointInRadius(ownerBT->GetActorLocation(),
 		3000.0f, randLocation))
 	{
-		TreeExeCode = 0;
-		return 0;//Success!
+		TreeExeState = ETaskExeState::Success;
+		return ETaskExeState::Success;//Success!
 	}
-	TreeExeCode = -1;
-	return -1;//Fail !
+	TreeExeState = ETaskExeState::Fail;
+	return ETaskExeState::Fail;//Fail !
 }
 
 //Action
-int UCalmBT::GoToRandPosition()
+ETaskExeState UCalmBT::GoToRandPosition()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UCalmBT::GoToRandPosition"))
 	AIController->MoveToLocation(randLocation.Location);
-	TreeExeCode = 0;
-	return 0;//Success !
+	ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
+		FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::ExeTreeInTimeIntervall),
+		10.0f, false);
+	TreeExeState = ETaskExeState::Success;
+	return ETaskExeState::Success;//Success !
 }
 
 
-int UCalmBT::RunTree()
+ETaskExeState UCalmBT::ExeTreeInTimeIntervall()
+{
+	if (RootTask->RunTask() != ETaskExeState::Fail)
+	{
+		TreeExeState = ETaskExeState::TryAgain;
+		return ETaskExeState::TryAgain;
+	}
+	TreeExeState = ETaskExeState::Success;
+	return ETaskExeState::Success;
+}
+
+
+ETaskExeState UCalmBT::RunTree()
 {
 	if(!bIsStopped)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RUN"));
-		TreeExeCode = RootTask->RunTask();
-		ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-			FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::ExeTreeInTimeIntervall),
-			10.0f, false);
-		return 0;
+		TreeExeState = RootTask->RunTask();
+		return TreeExeState;
 	}
-	return -1;
+	return ETaskExeState::Fail;
 }
 
-void UCalmBT::InitTree(ACharacter* owner, UNavigationSystemV1* navSys)
+
+
+
+void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
 {
 	Super::InitTree(owner, navSys);
-	AIController->ReceiveMoveCompleted.AddDynamic(this, &UCalmBT::ResetTimer);
+	ownerBT = owner;
+	firstSequence = NewObject<USequenceBT>(this, FName("FSCalmBT"));
+	firstTask = NewObject<UTaskBT>(this, FName("FTCalmBT"));
+	secondTask = NewObject<UTaskBT>(this, FName("STCalmBT"));
+	CalmUntilFail = NewObject<UUntilFailBT>(this, FName("UFCalmBT"));
+	firstSequence->Tasks.Add(firstTask);
+	firstSequence->Tasks.Add(secondTask);
+	bIsStopped = false;
+	firstTask->Task.BindUFunction(this, TEXT("IsReachable"));
+	secondTask->Task.BindUFunction(this, TEXT("GoToRandPosition"));
+	TimerDelegate.BindUFunction(this, TEXT("ExeTreeInTimeIntervall"));
+	CalmUntilFail->childTask = firstSequence;
+	RootTask = CalmUntilFail;
 }
 
-int UCalmBT::ExeTreeInTimeIntervall()
-{
-	if(RootTask->RunTask() != -1)
-	{
-		TreeExeCode = 1;
-		return 1;
-	}
-	TreeExeCode = 0;
-	return 0;
-}
-
-void UCalmBT::ResetTimer(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-{
-	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
-	if(!bIsStopped && Result == EPathFollowingResult::Success)
-	{
-		ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-			FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::ExeTreeInTimeIntervall),
-			10.0f, false);
-	}
-}
 
 void UCalmBT::StopTree()
 {

@@ -16,7 +16,7 @@ class DEEPSPACE_API USelectorBT : public UTaskBT
 public:
 	USelectorBT() = default;
 	UFUNCTION()
-	virtual int RunTask() override;
+	virtual ETaskExeState RunTask() override;
 	UPROPERTY()
 	TArray<UTaskBT*> Tasks;
 	

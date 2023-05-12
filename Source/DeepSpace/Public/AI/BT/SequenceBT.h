@@ -16,7 +16,7 @@ class DEEPSPACE_API USequenceBT : public UTaskBT
 public:
 	USequenceBT() = default;
 	UFUNCTION()
-	virtual int RunTask() override;
+	virtual ETaskExeState RunTask() override;
 	UPROPERTY()
 	TArray<UTaskBT*> Tasks;
 	

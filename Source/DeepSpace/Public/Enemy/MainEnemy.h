@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "AI/Alfred.h"
+#include "AI/AlfredFSM.h"
+#include "AI/BT/AlfredBTManager.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "MainEnemy.generated.h"
@@ -23,9 +25,14 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	UPROPERTY()
+	TObjectPtr<UCalmBT> CalmBT;
+	UPROPERTY()
+	TObjectPtr<UAttackBT> AttackBT;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	TObjectPtr<UAlfred> AlfredAI;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	UAlfred* AlfredAI;
+	TObjectPtr<UAlfredFSM> AlfredFSM;
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;
 	UPROPERTY(EditDefaultsOnly, Category = "HearingSphere")

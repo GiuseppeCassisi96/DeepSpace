@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AlfredBT.h"
+#include "BTInterface.h"
 #include "SelectorBT.h"
 #include "SequenceBT.h"
 #include "NavigationSystem.h"
 #include "UObject/NoExportTypes.h"
-#include "SequenceBT.h"
 #include "GameFramework/Character.h"
 #include "AttackBT.generated.h"
 
@@ -16,43 +15,35 @@
  * 
  */
 UCLASS()
-class DEEPSPACE_API UAttackBT : public UAlfredBT
+class DEEPSPACE_API UAttackBT : public UBTInterface
 {
 	GENERATED_BODY()
 public:
 	UAttackBT();
 	UFUNCTION()
-	virtual int RunTree() override;
+	virtual ETaskExeState RunTree() override;
 	virtual void StopTree() override;
-	virtual void InitTree(ACharacter* owner, UNavigationSystemV1* navSys, ACharacter* playerRef, TSubclassOf<UDamageType> type);
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type);
 	UFUNCTION()
-	int CheckDistanceMoreThan();
+	ETaskExeState CheckDistanceMoreThan();
 	UFUNCTION()
-	int GoTowardsThePlayer();
+	ETaskExeState GoTowardsThePlayer();
 	UFUNCTION()
-	int Attack();
+	ETaskExeState Attack();
 	UFUNCTION()
-	int WaitFunc();
+	ETaskExeState WaitFunc();
 	UFUNCTION()
 	void SetCanAttack();
 
-	UPROPERTY()
-	UTaskBT* checkDistanceMT;
-	UPROPERTY()
-	UTaskBT* followThePlayer;
-	UPROPERTY()
-	UTaskBT* attackThePlayer;
-	UPROPERTY()
-	UTaskBT* wait;
+	TObjectPtr<UTaskBT> checkDistanceMT;
+	TObjectPtr<UTaskBT> followThePlayer;
+	TObjectPtr<UTaskBT> attackThePlayer;
+	TObjectPtr<UTaskBT> wait;
 
-	UPROPERTY()
-	USelectorBT* sequenceSelector;
-	UPROPERTY()
-	USequenceBT* firstSequence;
-	UPROPERTY()
-	USequenceBT* secondSequence;
-	UPROPERTY()
-	ACharacter* playerRefBT;
+	TObjectPtr<USelectorBT> sequenceSelector;
+	TObjectPtr<USequenceBT> firstSequence;
+	TObjectPtr<USequenceBT> secondSequence;
+	TObjectPtr<ACharacter> playerRefBT;
 	
 	TSubclassOf<UDamageType> typeDamage;
 	bool bCanAttack = true;

@@ -6,19 +6,22 @@
 #include "UObject/NoExportTypes.h"
 #include "TaskBT.generated.h"
 
-
-/**
- * 
- */
-DECLARE_DELEGATE_RetVal(int, FTask);
+UENUM()
+enum class ETaskExeState
+{
+	Success,
+	Fail,
+	TryAgain
+};
+DECLARE_DELEGATE_RetVal(ETaskExeState, FTask);
 UCLASS()
 class DEEPSPACE_API UTaskBT : public UObject
 {
 	GENERATED_BODY()
 public:
 	UTaskBT() = default;
-	virtual int RunTask();
-	virtual void BindTask(UObject* InUserObject, const FName& InFunctionName);
-private:
+	virtual ETaskExeState RunTask();
+
 	FTask Task;
+	
 };

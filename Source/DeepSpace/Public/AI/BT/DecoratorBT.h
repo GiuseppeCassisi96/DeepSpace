@@ -15,6 +15,6 @@ class DEEPSPACE_API UDecoratorBT : public UTaskBT
 	GENERATED_BODY()
 public:
 	UDecoratorBT() = default;
-	virtual int RunTask() override;
+	virtual ETaskExeState RunTask() override;
 	
 };

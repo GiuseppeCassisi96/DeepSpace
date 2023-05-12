@@ -4,12 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FSMState.h"
-#include "BT/AlfredBTManager.h"
-#include <iostream>
-#include "Engine/Engine.h"
-#include "GameFramework/Actor.h"
-#include "GameFramework/Character.h"
-#include "UObject/NoExportTypes.h"
+#include "AI/BT/AlfredBTManager.h"
 #include "AlfredFSM.generated.h"
 
 
@@ -22,7 +17,7 @@ class DEEPSPACE_API UAlfredFSM : public UActorComponent
 	GENERATED_BODY()
 public:
 	UAlfredFSM();
-	TMap<EEnemyState, UFSMState*>& GetStates();
+	TMap<EEnemyState, UBTInterface*>& GetStates();
 	/**
 	 * @brief Is a Sensor Triggering Transaction Function (STTF) that 'fires' the transition from
 	 * one state to another, when the Alfred Sensors are triggered
@@ -31,26 +26,25 @@ public:
 	FORCEINLINE void GoToNewState(EEnemyState TargetState) { CurrentState = TargetState; }
 	/**
 	 * @brief Run the action of current state. If the action fails, it throws an 'ActionFailException'
-	 * @return returns -1 if the action fails, 0 otherwise
+	 * @return returns ETaskExeState::Fail if the action fails, ETaskExeState::Success otherwise
 	 */
-	int RunActionOfCurrentState();
-	void BindStates(UAlfredBTManager* BTManager);
+	ETaskExeState RunActionOfCurrentState();
 	EEnemyState CurrentState, InitialState;
 	UPROPERTY()
 	ACharacter* ownerFSM;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")
-	TMap<EEnemyState, UFSMState*> States;
+	TMap<EEnemyState, UBTInterface*> States;
 	UPROPERTY()
-	UFSMState* CalmState;
+	TObjectPtr<UFSMState> CalmState;
 	UPROPERTY()
-	UFSMState* HearingState;
+	TObjectPtr<UFSMState> HearingState;
 	UPROPERTY()
-	UFSMState* WarningState;
+	TObjectPtr<UFSMState> WarningState;
 	UPROPERTY()
-	UFSMState* AttackState;
+	TObjectPtr<UFSMState> AttackState;
 	UPROPERTY()
-	UFSMState* AllyState;
+	TObjectPtr<UFSMState> AllyState;
 	
 
 

@@ -5,14 +5,14 @@
 
 #include "Engine/Engine.h"
 
-int USequenceBT::RunTask()
+ETaskExeState USequenceBT::RunTask()
 {
 	for (int i = 0; i < Tasks.Num(); i++)
 	{
-		if(Tasks[i]->RunTask() == -1)
+		if(Tasks[i]->RunTask() == ETaskExeState::Fail)
 		{
-			return -1;
+			return ETaskExeState::Fail;
 		}
 	}
-	return 0;
+	return ETaskExeState::Success;
 }

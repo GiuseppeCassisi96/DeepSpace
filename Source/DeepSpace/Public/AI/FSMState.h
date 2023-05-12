@@ -17,8 +17,8 @@ enum class EEnemyState : uint8
 	Ally
 };
 
-
-DECLARE_DELEGATE_RetVal(int, FActionState);
+enum class ETaskExeState;
+DECLARE_DELEGATE_RetVal(ETaskExeState, FActionState);
 /**
  * 
  */
@@ -28,7 +28,7 @@ class DEEPSPACE_API UFSMState : public UObject
 	GENERATED_BODY()
 public:
 	UFSMState() = default;
-	int RunAction();
+	ETaskExeState RunAction();
 	FActionState Action;
 protected:
 	ActionFailException Exception;

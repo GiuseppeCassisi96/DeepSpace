@@ -19,12 +19,6 @@ UAttackBT::UAttackBT()
 	firstSequence = NewObject<USequenceBT>();
 	secondSequence = NewObject<USequenceBT>();
 
-	//TASKS BINDING
-	checkDistanceMT->BindTask(this, "CheckDistanceMoreThan");
-	followThePlayer->BindTask(this, "GoTowardsThePlayer");
-	attackThePlayer->BindTask(this, "Attack");
-	wait->BindTask(this, "WaitFunc");
-
 	firstSequence->Tasks.Add(checkDistanceMT);
 	firstSequence->Tasks.Add(followThePlayer);
 	secondSequence->Tasks.Add(attackThePlayer);
@@ -37,11 +31,11 @@ UAttackBT::UAttackBT()
 	bCanAttack = true;
 }
 
-int UAttackBT::RunTree()
+ETaskExeState UAttackBT::RunTree()
 {
 	if(!bIsStopped)
 		return RootTask->RunTask();
-	return -1;
+	return ETaskExeState::Fail;
 }
 
 void UAttackBT::StopTree()
@@ -49,53 +43,57 @@ void UAttackBT::StopTree()
 	Super::StopTree();
 }
 
-void UAttackBT::InitTree(ACharacter* owner, UNavigationSystemV1* navSys, ACharacter* playerRef, TSubclassOf<UDamageType> type)
+void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type)
 {
 	Super::InitTree(owner, navSys);
+	checkDistanceMT->Task.BindUFunction(this, FName("CheckDistanceMoreThan"));
+	followThePlayer->Task.BindUFunction(this, FName("GoTowardsThePlayer"));
+	attackThePlayer->Task.BindUFunction(this, TEXT("Attack"));
+	wait->Task.BindUFunction(this, TEXT("WaitFunc"));
 	playerRefBT = playerRef;
 	typeDamage = type;
 }
 
-int UAttackBT::CheckDistanceMoreThan()
+ETaskExeState UAttackBT::CheckDistanceMoreThan()
 {
 	float currentDinstance = FVector::Dist(playerRefBT->GetActorLocation(), ownerBT->GetActorLocation());
 	if (currentDinstance > 72.0f)
 	{
-		TreeExeCode = 0;
-		return 0;
+		TreeExeState = ETaskExeState::Success;
+		return ETaskExeState::Success;
 	}
-	TreeExeCode = -1;
-	return -1;
+	TreeExeState = ETaskExeState::Fail;
+	return ETaskExeState::Fail;
 }
 
-int UAttackBT::GoTowardsThePlayer()
+ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
 	if(AIController->MoveToLocation(playerRefBT->GetActorLocation(),
 		2.0f) == EPathFollowingRequestResult::RequestSuccessful)
 	{
-		TreeExeCode = 0;
-		return 0;//Success !
+		TreeExeState = ETaskExeState::Success;
+		return ETaskExeState::Success;//Success !
 	}
-	TreeExeCode = -1;
-	return -1;
+	TreeExeState = ETaskExeState::Fail;
+	return ETaskExeState::Fail;
 }
 
-int UAttackBT::Attack()
+ETaskExeState UAttackBT::Attack()
 {
 	if(bCanAttack)
 		UGameplayStatics::ApplyDamage(playerRefBT, 10.0f,
 			ownerBT->GetController(), ownerBT, typeDamage);
-	return 0;
+	return ETaskExeState::Success;
 }
 
-int UAttackBT::WaitFunc()
+ETaskExeState UAttackBT::WaitFunc()
 {
 	if(bCanAttack)
 	{
 		bCanAttack = false;
 		ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this, &UAttackBT::SetCanAttack, 3.0f, false);
 	}
-	return 0;
+	return ETaskExeState::Success;
 }
 
 void UAttackBT::SetCanAttack()

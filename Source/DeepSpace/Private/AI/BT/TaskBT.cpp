@@ -3,12 +3,12 @@
 
 #include "AI/BT/TaskBT.h"
 
-int UTaskBT::RunTask()
+ETaskExeState UTaskBT::RunTask()
 {
-	return Task.Execute();
+	if(Task.IsBound())
+	{
+		return Task.Execute();
+	}
+	return ETaskExeState::Fail;
 }
 
-void UTaskBT::BindTask(UObject* InUserObject, const FName& InFunctionName)
-{
-	Task.BindUFunction(InUserObject, InFunctionName);
-}

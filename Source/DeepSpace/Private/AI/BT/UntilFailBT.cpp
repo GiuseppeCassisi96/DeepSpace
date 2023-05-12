@@ -4,13 +4,17 @@
 #include "AI/BT/UntilFailBT.h"
 
 
-
-int UUntilFailBT::RunTask()
+UUntilFailBT::UUntilFailBT()
 {
-	if(childTask->RunTask() == -1)
+	childTask = NewObject<UTaskBT>();
+}
+
+ETaskExeState UUntilFailBT::RunTask()
+{
+	if(childTask->RunTask() == ETaskExeState::Fail)
 	{
-		return 0;
+		return ETaskExeState::Success;
 	}
-	return 1;
+	return ETaskExeState::TryAgain;
 }
 

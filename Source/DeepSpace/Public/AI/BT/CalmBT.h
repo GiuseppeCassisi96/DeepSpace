@@ -6,7 +6,7 @@
 #include "AIController.h"
 #include "UObject/NoExportTypes.h"
 #include "SequenceBT.h"
-#include "AlfredBT.h"
+#include "BTInterface.h"
 #include "TaskBT.h"
 #include "UntilFailBT.h"
 #include "TimerManager.h"
@@ -17,31 +17,29 @@
  * 
  */
 UCLASS()
-class DEEPSPACE_API UCalmBT : public UAlfredBT
+class DEEPSPACE_API UCalmBT : public UBTInterface 
 {
 	GENERATED_BODY()
 public:
 	UCalmBT();
 	UFUNCTION()
-	int IsReachable();
+	ETaskExeState IsReachable();
 	UFUNCTION()
-	int GoToRandPosition();
+	ETaskExeState GoToRandPosition();
 	UFUNCTION()
-	virtual int RunTree() override;
-	virtual void InitTree(ACharacter* owner, UNavigationSystemV1* navSys) override;
+	virtual ETaskExeState RunTree() override;
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys) override;
 	UFUNCTION()
-	int ExeTreeInTimeIntervall();
-	UFUNCTION()
-	void ResetTimer(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	ETaskExeState ExeTreeInTimeIntervall();
 	virtual void StopTree() override;
+
+	TObjectPtr<USequenceBT> firstSequence;
 	UPROPERTY()
-	USequenceBT* firstSequence;
+	TObjectPtr<UTaskBT> firstTask;
 	UPROPERTY()
-	UTaskBT* firstTask;
+	TObjectPtr<UTaskBT> secondTask;
 	UPROPERTY()
-	UTaskBT* secondTask;
-	UPROPERTY()
-	UUntilFailBT* CalmUntilFail;
+	TObjectPtr<UUntilFailBT> CalmUntilFail;
 	FTimerManager TimerManager;
 	FTimerHandle TimerHandle;
 	FTimerDelegate TimerDelegate;

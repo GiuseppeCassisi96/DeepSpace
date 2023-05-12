@@ -4,7 +4,7 @@
 #include "AI/BT/DecoratorBT.h"
 
 
-int UDecoratorBT::RunTask()
+ETaskExeState UDecoratorBT::RunTask()
 {
 	return Super::RunTask();
 }

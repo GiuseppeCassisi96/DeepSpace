@@ -3,14 +3,14 @@
 
 #include "AI/BT/SelectorBT.h"
 
-int USelectorBT::RunTask()
+ETaskExeState USelectorBT::RunTask()
 {
 	for(int i = 0; i < Tasks.Num(); i++)
 	{
-		if(Tasks[i]->RunTask() != -1)
+		if(Tasks[i]->RunTask() != ETaskExeState::Fail)
 		{
-			return 0;
+			return ETaskExeState::Success;
 		}
 	}
-	return -1;
+	return ETaskExeState::Fail;
 }

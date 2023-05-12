@@ -11,8 +11,6 @@ UAlfred::UAlfred()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	AlfredFSM = CreateDefaultSubobject<UAlfredFSM>(TEXT("AlfredFSM"));
-	AlfredBTManager = CreateDefaultSubobject<UAlfredBTManager>(TEXT("AlfredBTManager"));
 }
 
 // Called when the game starts
@@ -29,9 +27,6 @@ void UAlfred::BeginPlay()
 		owner->HearingSphere->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartHearSensors);
 		owner->HearingSphere->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopHearSensors);
 		navSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-		AlfredFSM->BindStates(AlfredBTManager);
-		AlfredBTManager->CalmBT->InitTree(owner, navSys);
-		AlfredFSM->RunActionOfCurrentState();
 	}
 }
 
@@ -52,7 +47,7 @@ void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult:
 		//Pass to warning state: He has seen the player, but now doesn't see him anymore
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f,
 			FColor::Red, TEXT("WARNING AFTER SEEN"));
-		AlfredFSM->GoToNewState(EEnemyState::Warning);
+		owner->AlfredFSM->GoToNewState(EEnemyState::Warning);
 		//AlfredFSM->RunActionOfCurrentState();
 		bHasSeen = false;
 	}
@@ -110,9 +105,11 @@ void UAlfred::EnemyView()
 	 //CAST RAY
 	if(bIsPlayerInTheViewBox)
 	{
-		if(!AlfredBTManager->AttackBT->playerRefBT)
+		if(owner->AttackBT->playerRefBT == nullptr)
 		{
-			AlfredBTManager->AttackBT->InitTree(owner, navSys, EnemyData.PlayerCharacter, owner->typeDamage);
+			owner->AttackBT->InitTree(owner, navSys, EnemyData.PlayerCharacter, 
+				owner->typeDamage);
+			owner->AlfredFSM->GetStates().Add(EEnemyState::Attack, owner->AttackBT);
 		}
 		EnemyData.bonesOfPlayer = EnemyData.PlayerCharacter->GetMainCharacterBones();
 		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
@@ -135,8 +132,8 @@ void UAlfred::EnemyView()
 	if (SeeSet.Defuzzification( 0.65f))
 	{
 		//Pass to attack state: The enemy sees you !!
-		AlfredFSM->GoToNewState(EEnemyState::Attack);
-		AlfredFSM->RunActionOfCurrentState();
+		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
+		owner->AlfredFSM->RunActionOfCurrentState();
 		bHasSeen = true;
 	}
 	else if (SeeSet.Defuzzification( 0.39f))

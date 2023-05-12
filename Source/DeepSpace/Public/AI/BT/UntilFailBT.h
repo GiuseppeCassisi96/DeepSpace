@@ -15,9 +15,9 @@ class DEEPSPACE_API UUntilFailBT : public UDecoratorBT
 {
 	GENERATED_BODY()
 public:
-	UUntilFailBT() = default;
-	virtual int RunTask() override;
+	UUntilFailBT();
+	virtual ETaskExeState RunTask() override;
 	UPROPERTY()
-	UTaskBT* childTask;
+	TObjectPtr<UTaskBT> childTask;
 	
 };

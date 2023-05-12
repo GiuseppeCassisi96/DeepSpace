@@ -2,14 +2,19 @@
 
 
 #include "AI/FSMState.h"
+#include "AI/BT/AlfredBTManager.h"
 
 
-
-int UFSMState::RunAction()
+ETaskExeState UFSMState::RunAction()
 {
-	if(Action.Execute() == -1)
+	if(Action.IsBound())
 	{
-		throw Exception;
+		if (Action.Execute() == ETaskExeState::Fail)
+		{
+			throw Exception;
+		}
+		return ETaskExeState::Success;
 	}
-	return 0;
+	return ETaskExeState::Fail;
+	
 }

@@ -6,9 +6,6 @@
 #include "MainCharacter.h"
 #include "FuzzyLogic.h"
 #include "NavigationSystem.h"
-#include "AlfredFSM.h"
-#include "BT/AlfredBTManager.h"
-#include "Items/ThrowableItem.h"
 #include "AIController.h"
 #include "Components/ActorComponent.h"
 #include "Alfred.generated.h"
@@ -49,10 +46,8 @@ public:
 	void EnemyHearing();
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite ,Category= "FSMComponent")
-	UAlfredFSM* AlfredFSM;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BTComponent")
-	UAlfredBTManager* AlfredBTManager;
+	UPROPERTY()
+	UNavigationSystemV1* navSys;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -63,8 +58,7 @@ protected:
 	AAIController* ControllerNPC;
 	UPROPERTY()
 	TArray<AActor*> actorToIgnore;
-	UPROPERTY()
-	UNavigationSystemV1* navSys;
+	
 	EnemyKnowledge EnemyData;
 	bool bIsPlayerInTheViewBox, bIsPlayerInTheHearingSphere;
 	bool bHasSeen;
