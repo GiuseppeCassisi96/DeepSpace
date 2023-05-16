@@ -85,6 +85,17 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 	
 }
 
+void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
+                     TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage)
+{
+	UNavigationSystemV1* NavigationSystemV1 = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	CalmBT->InitTree(enemy, NavigationSystemV1);
+	AlfredFSM->GetStates().Add(EEnemyState::Calm, CalmBT);
+	AttackBT->InitTree(enemy, NavigationSystemV1, nullptr, typeDamage);
+	AlfredFSM->GetStates().Add(EEnemyState::Attack, AttackBT);
+	AlfredFSM->RunActionOfCurrentState();
+}
+
 
 void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent,
                                  int otherBodyIndex, bool fromSweep, const FHitResult& sweepResults)
@@ -105,12 +116,7 @@ void UAlfred::EnemyView()
 	 //CAST RAY
 	if(bIsPlayerInTheViewBox)
 	{
-		if(owner->AttackBT->playerRefBT == nullptr)
-		{
-			owner->AttackBT->InitTree(owner, navSys, EnemyData.PlayerCharacter, 
-				owner->typeDamage);
-			owner->AlfredFSM->GetStates().Add(EEnemyState::Attack, owner->AttackBT);
-		}
+		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.PlayerCharacter;
 		EnemyData.bonesOfPlayer = EnemyData.PlayerCharacter->GetMainCharacterBones();
 		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
 		for(auto boneLocation: EnemyData.bonesOfPlayer)
@@ -131,6 +137,9 @@ void UAlfred::EnemyView()
 
 	if (SeeSet.Defuzzification( 0.65f))
 	{
+		//Stop the current action !
+		if(owner->AlfredFSM->GetCurrentState() != EEnemyState::Attack)
+			owner->AlfredFSM->StopAction();
 		//Pass to attack state: The enemy sees you !!
 		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
 		owner->AlfredFSM->RunActionOfCurrentState();

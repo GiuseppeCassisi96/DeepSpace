@@ -30,4 +30,9 @@ ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 	
 }
 
+void UAlfredFSM::StopAction()
+{
+	States[CurrentState]->StopTree();
+}
+
 

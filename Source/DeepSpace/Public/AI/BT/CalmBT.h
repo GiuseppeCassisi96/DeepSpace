@@ -21,17 +21,18 @@ class DEEPSPACE_API UCalmBT : public UBTInterface
 {
 	GENERATED_BODY()
 public:
-	UCalmBT();
+	UCalmBT() = default;
+	UFUNCTION()
+	virtual ETaskExeState RunTree() override;
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys) override;
+	virtual void StopTree() override;
 	UFUNCTION()
 	ETaskExeState IsReachable();
 	UFUNCTION()
 	ETaskExeState GoToRandPosition();
 	UFUNCTION()
-	virtual ETaskExeState RunTree() override;
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys) override;
-	UFUNCTION()
 	ETaskExeState ExeTreeInTimeIntervall();
-	virtual void StopTree() override;
+	
 
 	TObjectPtr<USequenceBT> firstSequence;
 	UPROPERTY()

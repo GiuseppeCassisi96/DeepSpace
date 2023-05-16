@@ -24,15 +24,15 @@ public:
 	 * @param TargetState is the new state
 	 */
 	FORCEINLINE void GoToNewState(EEnemyState TargetState) { CurrentState = TargetState; }
+	FORCEINLINE EEnemyState GetCurrentState() { return CurrentState; }
 	/**
 	 * @brief Run the action of current state. If the action fails, it throws an 'ActionFailException'
 	 * @return returns ETaskExeState::Fail if the action fails, ETaskExeState::Success otherwise
 	 */
 	ETaskExeState RunActionOfCurrentState();
-	EEnemyState CurrentState, InitialState;
-	UPROPERTY()
-	ACharacter* ownerFSM;
+	void StopAction();
 protected:
+	EEnemyState CurrentState, InitialState;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")
 	TMap<EEnemyState, UBTInterface*> States;
 	UPROPERTY()

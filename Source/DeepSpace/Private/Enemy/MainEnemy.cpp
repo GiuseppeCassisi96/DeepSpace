@@ -24,9 +24,7 @@ void AMainEnemy::BeginPlay()
 	Super::BeginPlay();
 	CalmBT = NewObject<UCalmBT>();
 	AttackBT = NewObject<UAttackBT>();
-	CalmBT->InitTree(this, FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()));
-	AlfredFSM->GetStates().Add(EEnemyState::Calm, CalmBT);
-	AlfredFSM->RunActionOfCurrentState();
+	AlfredAI->InitAI(CalmBT, AttackBT, AlfredFSM, this, typeDamage);
 	
 }
 

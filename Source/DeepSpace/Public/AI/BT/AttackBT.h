@@ -19,7 +19,7 @@ class DEEPSPACE_API UAttackBT : public UBTInterface
 {
 	GENERATED_BODY()
 public:
-	UAttackBT();
+	UAttackBT() = default;
 	UFUNCTION()
 	virtual ETaskExeState RunTree() override;
 	virtual void StopTree() override;
@@ -35,18 +35,31 @@ public:
 	UFUNCTION()
 	void SetCanAttack();
 
+	//NODES OF TREE
+	UPROPERTY()
 	TObjectPtr<UTaskBT> checkDistanceMT;
+	UPROPERTY()
 	TObjectPtr<UTaskBT> followThePlayer;
+	UPROPERTY()
 	TObjectPtr<UTaskBT> attackThePlayer;
+	UPROPERTY()
 	TObjectPtr<UTaskBT> wait;
 
 	TObjectPtr<USelectorBT> sequenceSelector;
+	UPROPERTY()
 	TObjectPtr<USequenceBT> firstSequence;
+	UPROPERTY()
 	TObjectPtr<USequenceBT> secondSequence;
+
+
+	//PARAMATERS OF TREE
+	UPROPERTY()
 	TObjectPtr<ACharacter> playerRefBT;
 	
 	TSubclassOf<UDamageType> typeDamage;
 	bool bCanAttack = true;
+
+	//ATTACK TIMER
 	FTimerHandle TimerHandle;
 	
 };

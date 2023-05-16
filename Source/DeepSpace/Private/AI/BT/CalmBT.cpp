@@ -4,14 +4,52 @@
 #include "AI/BT/CalmBT.h"
 
 
-
-
-UCalmBT::UCalmBT()
+ETaskExeState UCalmBT::RunTree()
 {
-	
+	if (!bIsStopped)
+	{
+		TreeExeState = RootTask->RunTask();
+		return TreeExeState;
+	}
+	return ETaskExeState::Fail;
+}
 
-	UE_LOG(LogTemp, Warning, TEXT("UCalmBT::UCalmBT()"));
-	
+
+
+
+void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
+{
+	Super::InitTree(owner, navSys);
+	//ownerBT = owner;
+	//INSTANCIES CREATION PHASE:
+		//TASKS
+	firstTask = NewObject<UTaskBT>(this, FName("FTCalmBT"));
+	secondTask = NewObject<UTaskBT>(this, FName("STCalmBT"));
+	//COMPOSITE TASKS
+	firstSequence = NewObject<USequenceBT>(this, FName("FSCalmBT"));
+	//DECORATOR
+	CalmUntilFail = NewObject<UUntilFailBT>(this, FName("UFCalmBT"));
+
+	//BINDING PHASE:
+	firstTask->Task.BindUFunction(this, TEXT("IsReachable"));
+	secondTask->Task.BindUFunction(this, TEXT("GoToRandPosition"));
+	TimerDelegate.BindUFunction(this, TEXT("ExeTreeInTimeIntervall"));
+
+	//ADDING PHASE:
+	firstSequence->Tasks.Add(firstTask);
+	firstSequence->Tasks.Add(secondTask);
+
+	//PARAM SETTING PHASE:
+	CalmUntilFail->childTask = firstSequence;
+	RootTask = CalmUntilFail;
+	bIsStopped = false;
+}
+
+
+void UCalmBT::StopTree()
+{
+	Super::StopTree();
+	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
 }
 
 //Condition
@@ -51,42 +89,6 @@ ETaskExeState UCalmBT::ExeTreeInTimeIntervall()
 }
 
 
-ETaskExeState UCalmBT::RunTree()
-{
-	if(!bIsStopped)
-	{
-		TreeExeState = RootTask->RunTask();
-		return TreeExeState;
-	}
-	return ETaskExeState::Fail;
-}
 
-
-
-
-void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
-{
-	Super::InitTree(owner, navSys);
-	ownerBT = owner;
-	firstSequence = NewObject<USequenceBT>(this, FName("FSCalmBT"));
-	firstTask = NewObject<UTaskBT>(this, FName("FTCalmBT"));
-	secondTask = NewObject<UTaskBT>(this, FName("STCalmBT"));
-	CalmUntilFail = NewObject<UUntilFailBT>(this, FName("UFCalmBT"));
-	firstSequence->Tasks.Add(firstTask);
-	firstSequence->Tasks.Add(secondTask);
-	bIsStopped = false;
-	firstTask->Task.BindUFunction(this, TEXT("IsReachable"));
-	secondTask->Task.BindUFunction(this, TEXT("GoToRandPosition"));
-	TimerDelegate.BindUFunction(this, TEXT("ExeTreeInTimeIntervall"));
-	CalmUntilFail->childTask = firstSequence;
-	RootTask = CalmUntilFail;
-}
-
-
-void UCalmBT::StopTree()
-{
-	Super::StopTree();
-	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
-}
 
 

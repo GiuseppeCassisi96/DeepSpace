@@ -17,12 +17,19 @@ struct EnemyKnowledge
 	TArray<FVector> bonesOfPlayer;
 };
 class AMainEnemy;
+class UCalmBT;
+class UAttackBT;
+class UAlfredFSM;
 UCLASS( ClassGroup=(IA), meta=(BlueprintSpawnableComponent) )
 class DEEPSPACE_API UAlfred : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
+	//CONSTRUCTOR
+	UAlfred();
+
+	//SENSORING FUNCTIONS
 	UFUNCTION()
 	void StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent,
 		int otherBodyIndex, bool fromSweep, const FHitResult& sweepResults);
@@ -35,17 +42,22 @@ public:
 	UFUNCTION()
 	void StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent,
 		int otherBodyIndex);
+	void EnemyView();
+	void EnemyHearing();
+
+	//EVENT FUNCTIONS
 	UFUNCTION()
 	void NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 	UFUNCTION()
 	void ItemHitNearEnemy(FVector hitLocation, float itemNoisiness);
 
-	// Sets default values for this component's properties
-	UAlfred();
-	void EnemyView();
-	void EnemyHearing();
+	//INIT AI FUNCTION
+	void InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
+	            TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage);
+	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	UPROPERTY()
 	UNavigationSystemV1* navSys;
 protected:
