@@ -12,8 +12,6 @@ AMainEnemy::AMainEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 	AlfredAI = CreateDefaultSubobject<UAlfred>(TEXT("AlfredAI"));
 	AlfredFSM = CreateDefaultSubobject<UAlfredFSM>(TEXT("AlfredFSM"));
-	CalmBT = NewObject<UCalmBT>();
-	AttackBT = NewObject<UAttackBT>();
 	ViewBox = CreateDefaultSubobject<UBoxComponent>(TEXT("ViewBox"));
 	ViewBox->SetupAttachment(RootComponent);
 	HearingSphere = CreateDefaultSubobject<USphereComponent>(TEXT("HearingSphere"));
@@ -24,6 +22,8 @@ AMainEnemy::AMainEnemy()
 void AMainEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	CalmBT = NewObject<UCalmBT>();
+	AttackBT = NewObject<UAttackBT>();
 	CalmBT->InitTree(this, FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()));
 	AlfredFSM->GetStates().Add(EEnemyState::Calm, CalmBT);
 	AlfredFSM->RunActionOfCurrentState();

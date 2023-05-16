@@ -29,9 +29,9 @@ public:
 	TObjectPtr<UCalmBT> CalmBT;
 	UPROPERTY()
 	TObjectPtr<UAttackBT> AttackBT;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-	TObjectPtr<UAlfred> AlfredAI;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
+	TObjectPtr<UAlfred> AlfredAI;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FSM")
 	TObjectPtr<UAlfredFSM> AlfredFSM;
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;

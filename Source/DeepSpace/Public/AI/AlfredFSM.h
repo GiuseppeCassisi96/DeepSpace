@@ -11,7 +11,7 @@
 /**
  * 
  */
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (FSM), meta = (BlueprintSpawnableComponent))
 class DEEPSPACE_API UAlfredFSM : public UActorComponent
 {
 	GENERATED_BODY()

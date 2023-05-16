@@ -17,7 +17,7 @@ struct EnemyKnowledge
 	TArray<FVector> bonesOfPlayer;
 };
 class AMainEnemy;
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(IA), meta=(BlueprintSpawnableComponent) )
 class DEEPSPACE_API UAlfred : public UActorComponent
 {
 	GENERATED_BODY()
