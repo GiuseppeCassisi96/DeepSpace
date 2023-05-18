@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BT/UntilFailBT.h"
+#include "AI/BT/BTNodes/UntilFailBT.h"
 
 
 UUntilFailBT::UUntilFailBT()

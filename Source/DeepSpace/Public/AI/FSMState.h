@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "ActionFailException.h"
+#include "BT/AttackBT.h"
+#include "BT/CalmBT.h"
+#include "BT/WarningBT.h"
 #include "UObject/NoExportTypes.h"
 #include "FSMState.generated.h"
 

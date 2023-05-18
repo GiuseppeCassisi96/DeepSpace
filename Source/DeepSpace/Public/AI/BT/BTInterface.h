@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "NavigationSystem.h"
-#include "TaskBT.h"
+#include "BTNodes/TaskBT.h"
+#include "BTNodes/SequenceBT.h"
+#include "BTNodes/UntilFailBT.h"
 #include "GameFramework/Character.h"
 #include "BTInterface.generated.h"
 UCLASS()
@@ -29,5 +31,6 @@ public:
 	UPROPERTY()
 	TObjectPtr<AAIController> AIController;
 	FNavLocation randLocation;
+	FTimerHandle TimerHandle;
 
 };

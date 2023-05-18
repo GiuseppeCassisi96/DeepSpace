@@ -20,6 +20,7 @@ ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 {
 	try
 	{
+		States[CurrentState]->bIsStopped = false;
 		return States[CurrentState]->RunTree();
 	}
 	catch (ActionFailException e)
@@ -33,6 +34,15 @@ ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 void UAlfredFSM::StopAction()
 {
 	States[CurrentState]->StopTree();
+}
+
+void UAlfredFSM::CheckTreeStatus()
+{
+	if(States[CurrentState]->TreeExeState == ETaskExeState::Fail)
+	{
+		GoToNewState(EEnemyState::Calm);
+		RunActionOfCurrentState();
+	}
 }
 
 

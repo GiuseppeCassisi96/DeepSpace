@@ -19,6 +19,7 @@ struct EnemyKnowledge
 class AMainEnemy;
 class UCalmBT;
 class UAttackBT;
+class UWarningBT;
 class UAlfredFSM;
 UCLASS( ClassGroup=(IA), meta=(BlueprintSpawnableComponent) )
 class DEEPSPACE_API UAlfred : public UActorComponent
@@ -50,10 +51,13 @@ public:
 	void NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 	UFUNCTION()
 	void ItemHitNearEnemy(FVector hitLocation, float itemNoisiness);
+	UFUNCTION()
+	void GoToCalmState();
 
 	//INIT AI FUNCTION
 	void InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
-	            TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage);
+	            TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage, TObjectPtr<
+	            UWarningBT> WarningBT);
 	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -77,5 +81,6 @@ protected:
 	FHitResult HitResult;
 	int seeCount = 0;
 	FuzzyLogic SeeSet, NonHearSet;
+	FTimerHandle GoToCalmTimer;
 	
 };

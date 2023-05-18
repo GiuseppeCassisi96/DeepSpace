@@ -11,7 +11,8 @@ enum class ETaskExeState
 {
 	Success,
 	Fail,
-	TryAgain
+	TryAgain,
+	Stopped
 };
 DECLARE_DELEGATE_RetVal(ETaskExeState, FTask);
 UCLASS()

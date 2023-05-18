@@ -36,8 +36,7 @@ void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	EnemyView();
 	EnemyHearing();
-	
-	
+	owner->AlfredFSM->CheckTreeStatus();
 }
 
 void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
@@ -48,7 +47,9 @@ void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult:
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f,
 			FColor::Red, TEXT("WARNING AFTER SEEN"));
 		owner->AlfredFSM->GoToNewState(EEnemyState::Warning);
-		//AlfredFSM->RunActionOfCurrentState();
+		owner->AlfredFSM->RunActionOfCurrentState();
+		owner->GetWorldTimerManager().SetTimer(GoToCalmTimer, this, 
+			&UAlfred::GoToCalmState, 60.0f);
 		bHasSeen = false;
 	}
 }
@@ -85,14 +86,24 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 	
 }
 
+void UAlfred::GoToCalmState()
+{
+	GEngine->AddOnScreenDebugMessage(1, 6.0f, FColor::Red, TEXT("calmState"));
+	owner->AlfredFSM->GoToNewState(EEnemyState::Calm);
+	owner->AlfredFSM->RunActionOfCurrentState();
+}
+
 void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
-                     TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage)
+                     TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage, TObjectPtr<
+	                     UWarningBT> WarningBT)
 {
 	UNavigationSystemV1* NavigationSystemV1 = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 	CalmBT->InitTree(enemy, NavigationSystemV1);
 	AlfredFSM->GetStates().Add(EEnemyState::Calm, CalmBT);
 	AttackBT->InitTree(enemy, NavigationSystemV1, nullptr, typeDamage);
 	AlfredFSM->GetStates().Add(EEnemyState::Attack, AttackBT);
+	WarningBT->InitTree(owner, NavigationSystemV1);
+	AlfredFSM->GetStates().Add(EEnemyState::Warning, WarningBT);
 	AlfredFSM->RunActionOfCurrentState();
 }
 
@@ -116,7 +127,6 @@ void UAlfred::EnemyView()
 	 //CAST RAY
 	if(bIsPlayerInTheViewBox)
 	{
-		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.PlayerCharacter;
 		EnemyData.bonesOfPlayer = EnemyData.PlayerCharacter->GetMainCharacterBones();
 		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
 		for(auto boneLocation: EnemyData.bonesOfPlayer)
@@ -137,21 +147,23 @@ void UAlfred::EnemyView()
 
 	if (SeeSet.Defuzzification( 0.65f))
 	{
-		//Stop the current action !
-		if(owner->AlfredFSM->GetCurrentState() != EEnemyState::Attack)
-			owner->AlfredFSM->StopAction();
+		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.PlayerCharacter;
+		Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->playerRefBT = EnemyData.PlayerCharacter;
 		//Pass to attack state: The enemy sees you !!
 		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
 		owner->AlfredFSM->RunActionOfCurrentState();
 		bHasSeen = true;
+		owner->GetWorldTimerManager().ClearTimer(GoToCalmTimer);
 	}
 	else if (SeeSet.Defuzzification( 0.39f))
 	{
-		//Pass to warning state: The enemy has seen something and getting worried
-		/*AlfredFSM->GoToNewState(EEnemyState::Warning);
-		AlfredFSM->RunActionOfCurrentState();*/
-		if(!bHasSeen)
+		if (!bHasSeen)
 		{
+			Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->playerRefBT = EnemyData.PlayerCharacter;
+			//Pass to warning state: The enemy has seen something and getting worried
+			owner->GetWorldTimerManager().SetTimer(GoToCalmTimer, this, &UAlfred::GoToCalmState, 60.0f);
+			owner->AlfredFSM->GoToNewState(EEnemyState::Warning);
+			owner->AlfredFSM->RunActionOfCurrentState();
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Warning"));
 		}
 	}

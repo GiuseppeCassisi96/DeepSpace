@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BT/SequenceBT.h"
+#include "AI/BT/BTNodes/SequenceBT.h"
 
 #include "Engine/Engine.h"
 

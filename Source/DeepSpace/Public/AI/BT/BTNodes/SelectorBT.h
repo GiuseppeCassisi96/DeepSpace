@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/BT/TaskBT.h"
+#include "AI/BT/BTNodes/TaskBT.h"
 #include "SelectorBT.generated.h"
 
 /**

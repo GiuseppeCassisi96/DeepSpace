@@ -3,21 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TimerManager.h"
-#include "AI/BT/DecoratorBT.h"
-#include "UntilFailBT.generated.h"
+#include "AI/BT/BTNodes/TaskBT.h"
+#include "SequenceBT.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DEEPSPACE_API UUntilFailBT : public UDecoratorBT
+class DEEPSPACE_API USequenceBT : public UTaskBT
 {
 	GENERATED_BODY()
 public:
-	UUntilFailBT();
+	USequenceBT() = default;
+	UFUNCTION()
 	virtual ETaskExeState RunTask() override;
 	UPROPERTY()
-	TObjectPtr<UTaskBT> childTask;
+	TArray<UTaskBT*> Tasks;
+	
 	
 };

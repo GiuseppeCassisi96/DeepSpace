@@ -3,22 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/BT/TaskBT.h"
-#include "SequenceBT.generated.h"
+#include "AI/BT/BTNodes/TaskBT.h"
+#include "DecoratorBT.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DEEPSPACE_API USequenceBT : public UTaskBT
+class DEEPSPACE_API UDecoratorBT : public UTaskBT
 {
 	GENERATED_BODY()
 public:
-	USequenceBT() = default;
-	UFUNCTION()
+	UDecoratorBT() = default;
 	virtual ETaskExeState RunTask() override;
-	UPROPERTY()
-	TArray<UTaskBT*> Tasks;
-	
 	
 };

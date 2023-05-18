@@ -5,10 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "UObject/NoExportTypes.h"
-#include "SequenceBT.h"
 #include "BTInterface.h"
-#include "TaskBT.h"
-#include "UntilFailBT.h"
 #include "TimerManager.h"
 #include "NavigationSystem/Public/NavigationSystem.h"
 #include "CalmBT.generated.h"
@@ -30,18 +27,14 @@ public:
 	ETaskExeState IsReachable();
 	UFUNCTION()
 	ETaskExeState GoToRandPosition();
-	UFUNCTION()
-	ETaskExeState ExeTreeInTimeIntervall();
 	
 
-	TObjectPtr<USequenceBT> firstSequence;
+	TObjectPtr<USequenceBT> FirstSequence;
 	UPROPERTY()
-	TObjectPtr<UTaskBT> firstTask;
+	TObjectPtr<UTaskBT> TaskIsReachable;
 	UPROPERTY()
-	TObjectPtr<UTaskBT> secondTask;
+	TObjectPtr<UTaskBT> TaskGoToRandPosition;
 	UPROPERTY()
 	TObjectPtr<UUntilFailBT> CalmUntilFail;
 	FTimerManager TimerManager;
-	FTimerHandle TimerHandle;
-	FTimerDelegate TimerDelegate;
 };

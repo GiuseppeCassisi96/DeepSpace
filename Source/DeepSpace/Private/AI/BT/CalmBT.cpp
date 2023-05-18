@@ -11,7 +11,8 @@ ETaskExeState UCalmBT::RunTree()
 		TreeExeState = RootTask->RunTask();
 		return TreeExeState;
 	}
-	return ETaskExeState::Fail;
+	TreeExeState = ETaskExeState::Stopped;
+	return ETaskExeState::Stopped;
 }
 
 
@@ -20,27 +21,25 @@ ETaskExeState UCalmBT::RunTree()
 void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
 {
 	Super::InitTree(owner, navSys);
-	//ownerBT = owner;
 	//INSTANCIES CREATION PHASE:
 		//TASKS
-	firstTask = NewObject<UTaskBT>(this, FName("FTCalmBT"));
-	secondTask = NewObject<UTaskBT>(this, FName("STCalmBT"));
+	TaskIsReachable = NewObject<UTaskBT>(this, FName("FTCalmBT"));
+	TaskGoToRandPosition = NewObject<UTaskBT>(this, FName("STCalmBT"));
 	//COMPOSITE TASKS
-	firstSequence = NewObject<USequenceBT>(this, FName("FSCalmBT"));
+	FirstSequence = NewObject<USequenceBT>(this, FName("FSCalmBT"));
 	//DECORATOR
 	CalmUntilFail = NewObject<UUntilFailBT>(this, FName("UFCalmBT"));
 
 	//BINDING PHASE:
-	firstTask->Task.BindUFunction(this, TEXT("IsReachable"));
-	secondTask->Task.BindUFunction(this, TEXT("GoToRandPosition"));
-	TimerDelegate.BindUFunction(this, TEXT("ExeTreeInTimeIntervall"));
+	TaskIsReachable->Task.BindUFunction(this, TEXT("IsReachable"));
+	TaskGoToRandPosition->Task.BindUFunction(this, TEXT("GoToRandPosition"));
 
 	//ADDING PHASE:
-	firstSequence->Tasks.Add(firstTask);
-	firstSequence->Tasks.Add(secondTask);
+	FirstSequence->Tasks.Add(TaskIsReachable);
+	FirstSequence->Tasks.Add(TaskGoToRandPosition);
 
 	//PARAM SETTING PHASE:
-	CalmUntilFail->childTask = firstSequence;
+	CalmUntilFail->childTask = FirstSequence;
 	RootTask = CalmUntilFail;
 	bIsStopped = false;
 }
@@ -58,10 +57,8 @@ ETaskExeState UCalmBT::IsReachable()
 	if (NavSys->GetRandomReachablePointInRadius(ownerBT->GetActorLocation(),
 		3000.0f, randLocation))
 	{
-		TreeExeState = ETaskExeState::Success;
 		return ETaskExeState::Success;//Success!
 	}
-	TreeExeState = ETaskExeState::Fail;
 	return ETaskExeState::Fail;//Fail !
 }
 
@@ -69,24 +66,14 @@ ETaskExeState UCalmBT::IsReachable()
 ETaskExeState UCalmBT::GoToRandPosition()
 {
 	AIController->MoveToLocation(randLocation.Location);
+	//I create a timer to implement until fail decorator
 	ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-		FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::ExeTreeInTimeIntervall),
+		FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::RunTree),
 		10.0f, false);
-	TreeExeState = ETaskExeState::Success;
 	return ETaskExeState::Success;//Success !
 }
 
 
-ETaskExeState UCalmBT::ExeTreeInTimeIntervall()
-{
-	if (RootTask->RunTask() != ETaskExeState::Fail)
-	{
-		TreeExeState = ETaskExeState::TryAgain;
-		return ETaskExeState::TryAgain;
-	}
-	TreeExeState = ETaskExeState::Success;
-	return ETaskExeState::Success;
-}
 
 
 

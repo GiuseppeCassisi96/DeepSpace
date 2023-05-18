@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "FSMState.h"
-#include "AI/BT/AlfredBTManager.h"
 #include "AlfredFSM.generated.h"
 
 
@@ -23,7 +22,12 @@ public:
 	 * one state to another, when the Alfred Sensors are triggered
 	 * @param TargetState is the new state
 	 */
-	FORCEINLINE void GoToNewState(EEnemyState TargetState) { CurrentState = TargetState; }
+	FORCEINLINE void GoToNewState(EEnemyState TargetState)
+	{
+		if (CurrentState != TargetState)
+			States[CurrentState]->StopTree();
+		CurrentState = TargetState;
+	}
 	FORCEINLINE EEnemyState GetCurrentState() { return CurrentState; }
 	/**
 	 * @brief Run the action of current state. If the action fails, it throws an 'ActionFailException'
@@ -31,6 +35,7 @@ public:
 	 */
 	ETaskExeState RunActionOfCurrentState();
 	void StopAction();
+	void CheckTreeStatus();
 protected:
 	EEnemyState CurrentState, InitialState;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")

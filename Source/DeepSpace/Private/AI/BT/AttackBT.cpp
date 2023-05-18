@@ -9,9 +9,13 @@
 
 ETaskExeState UAttackBT::RunTree()
 {
-	if(!bIsStopped)
+	if (!bIsStopped)
+	{
+		TreeExeState = ETaskExeState::Success;
 		return RootTask->RunTask();
-	return ETaskExeState::Fail;
+	}
+	TreeExeState = ETaskExeState::Stopped;
+	return ETaskExeState::Stopped;
 }
 
 void UAttackBT::StopTree()
@@ -63,24 +67,18 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 		FString::Printf(TEXT("Current Dist: %f"), currentDinstance));
 	if (currentDinstance > 82.0f)
 	{
-		TreeExeState = ETaskExeState::Success;
 		return ETaskExeState::Success;
 	}
-	TreeExeState = ETaskExeState::Fail;
 	return ETaskExeState::Fail;
 }
 
 //Action
 ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
-	if(AIController->MoveToLocation(playerRefBT->GetActorLocation(),
-		2.0f) == EPathFollowingRequestResult::RequestSuccessful)
-	{
-		TreeExeState = ETaskExeState::Success;
-		return ETaskExeState::Success;//Success !
-	}
-	TreeExeState = ETaskExeState::Fail;
-	return ETaskExeState::Fail;
+	AIController->MoveToLocation(playerRefBT->GetActorLocation(),
+		2.0f);
+	return ETaskExeState::Success;//Success !
+	
 }
 
 //Action

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BT/SelectorBT.h"
+#include "AI/BT/BTNodes/SelectorBT.h"
 
 ETaskExeState USelectorBT::RunTask()
 {

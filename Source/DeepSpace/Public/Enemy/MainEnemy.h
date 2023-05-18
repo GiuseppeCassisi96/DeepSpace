@@ -6,7 +6,6 @@
 #include "Components/BoxComponent.h"
 #include "AI/Alfred.h"
 #include "AI/AlfredFSM.h"
-#include "AI/BT/AlfredBTManager.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "MainEnemy.generated.h"
@@ -29,9 +28,11 @@ public:
 	TObjectPtr<UCalmBT> CalmBT;
 	UPROPERTY()
 	TObjectPtr<UAttackBT> AttackBT;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
+	UPROPERTY()
+	TObjectPtr<UWarningBT> WarningBT;
+	UPROPERTY()
 	TObjectPtr<UAlfred> AlfredAI;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FSM")
+	UPROPERTY()
 	TObjectPtr<UAlfredFSM> AlfredFSM;
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;

@@ -238,7 +238,7 @@ void AMainCharacter::SetState(PlayerAnimState newState)
 void AMainCharacter::TakeDamageFromEnemy(AActor* Actor, float damage, const UDamageType* type, AController* Contr,
 	AActor* a)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATTACK"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, a->GetHumanReadableName());
 }
 
 
