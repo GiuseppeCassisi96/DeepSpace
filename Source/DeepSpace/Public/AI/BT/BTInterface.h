@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "NavigationSystem.h"
 #include "BTNodes/TaskBT.h"
+#include "BTNodes/SelectorBT.h"
 #include "BTNodes/SequenceBT.h"
 #include "BTNodes/UntilFailBT.h"
 #include "GameFramework/Character.h"

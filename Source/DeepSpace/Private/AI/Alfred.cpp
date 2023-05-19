@@ -41,7 +41,7 @@ void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 
 void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (bHasSeen && Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
+	if ((bHasSeen || bHasNoticeSomething) && Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
 	{
 		//Pass to warning state: He has seen the player, but now doesn't see him anymore
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f,
@@ -51,6 +51,7 @@ void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult:
 		owner->GetWorldTimerManager().SetTimer(GoToCalmTimer, this, 
 			&UAlfred::GoToCalmState, 60.0f);
 		bHasSeen = false;
+		bHasNoticeSomething = false;
 	}
 }
 
@@ -76,11 +77,11 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 		if (NonHearSet.Defuzzification(0.30))
 		{
 			//Pass to hear state: The enemy hears something !!
-			/*AlfredFSM->GoToNewState(EEnemyState::Hearing);
-			AlfredFSM->RunActionOfCurrentState();*/
-			//@todo Move npc movement in Behavior Tree. 
-			/*const FVector newLocationToReach = hitLocation;
-			ControllerNPC->MoveToLocation(newLocationToReach, 100.0f);*/
+			owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
+			Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = hitLocation;
+			Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = hitLocation;
+			owner->AlfredFSM->RunActionOfCurrentState();
+			bHasNoticeSomething = true;
 		}
 	}
 	
@@ -95,7 +96,7 @@ void UAlfred::GoToCalmState()
 
 void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
                      TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage, TObjectPtr<
-	                     UWarningBT> WarningBT)
+	                     UWarningBT> WarningBT, TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT)
 {
 	UNavigationSystemV1* NavigationSystemV1 = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 	CalmBT->InitTree(enemy, NavigationSystemV1);
@@ -104,6 +105,8 @@ void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
 	AlfredFSM->GetStates().Add(EEnemyState::Attack, AttackBT);
 	WarningBT->InitTree(owner, NavigationSystemV1);
 	AlfredFSM->GetStates().Add(EEnemyState::Warning, WarningBT);
+	NoticeSomethingBT->InitTree(owner, NavigationSystemV1, FVector::Zero());
+	AlfredFSM->GetStates().Add(EEnemyState::NoticeSomething, NoticeSomethingBT);
 	AlfredFSM->RunActionOfCurrentState();
 }
 
@@ -127,6 +130,7 @@ void UAlfred::EnemyView()
 	 //CAST RAY
 	if(bIsPlayerInTheViewBox)
 	{
+		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.PlayerCharacter;
 		EnemyData.bonesOfPlayer = EnemyData.PlayerCharacter->GetMainCharacterBones();
 		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
 		for(auto boneLocation: EnemyData.bonesOfPlayer)
@@ -147,8 +151,6 @@ void UAlfred::EnemyView()
 
 	if (SeeSet.Defuzzification( 0.65f))
 	{
-		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.PlayerCharacter;
-		Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->playerRefBT = EnemyData.PlayerCharacter;
 		//Pass to attack state: The enemy sees you !!
 		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
 		owner->AlfredFSM->RunActionOfCurrentState();
@@ -159,12 +161,12 @@ void UAlfred::EnemyView()
 	{
 		if (!bHasSeen)
 		{
-			Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->playerRefBT = EnemyData.PlayerCharacter;
+			Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.PlayerCharacter->GetActorLocation();
 			//Pass to warning state: The enemy has seen something and getting worried
-			owner->GetWorldTimerManager().SetTimer(GoToCalmTimer, this, &UAlfred::GoToCalmState, 60.0f);
-			owner->AlfredFSM->GoToNewState(EEnemyState::Warning);
+			Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.PlayerCharacter->GetActorLocation();
+			owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 			owner->AlfredFSM->RunActionOfCurrentState();
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Warning"));
+			bHasNoticeSomething = true;
 		}
 	}
 	seeCount = 0;
@@ -199,8 +201,8 @@ void UAlfred::StartHearSensors(UPrimitiveComponent* OverlappedComponent, AActor*
 		}
 		if(ThrowableItem)
 		{
-
-			ThrowableItem->OnThrowableItemEvent.AddDynamic(this, &UAlfred::ItemHitNearEnemy);
+			if(!ThrowableItem->OnThrowableItemEvent.IsBound())
+				ThrowableItem->OnThrowableItemEvent.AddDynamic(this, &UAlfred::ItemHitNearEnemy);
 		}
 		
 	}
@@ -231,9 +233,11 @@ void UAlfred::EnemyHearing()
 			if (NonHearSet.Defuzzification(0.60))
 			{
 				//Pass to hear state: The enemy hears something !!
-				/*AlfredFSM->GoToNewState(EEnemyState::Hearing);
-				AlfredFSM->RunActionOfCurrentState();*/
-				////@todo Move npc movement in Behavior Tree. 
+				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.PlayerCharacter->GetActorLocation();
+				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.PlayerCharacter->GetActorLocation();
+				owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
+				owner->AlfredFSM->RunActionOfCurrentState();
+				bHasNoticeSomething = true;
 			}
 		}
 	}

@@ -31,6 +31,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<UWarningBT> WarningBT;
 	UPROPERTY()
+	TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT;
+	UPROPERTY()
 	TObjectPtr<UAlfred> AlfredAI;
 	UPROPERTY()
 	TObjectPtr<UAlfredFSM> AlfredFSM;

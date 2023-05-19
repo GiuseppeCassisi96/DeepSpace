@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <Kismet/KismetMathLibrary.h>
 #include "AI/BT/BTInterface.h"
 #include "WarningBT.generated.h"
 
@@ -32,8 +31,7 @@ public:
 	TObjectPtr<USequenceBT> FirstSequence;
 	UPROPERTY()
 	TObjectPtr<UUntilFailBT> CalmUntilFail;
-	UPROPERTY()
-	TObjectPtr<ACharacter> playerRefBT;
+	FVector Location;
 
 	FVector dest;
 	

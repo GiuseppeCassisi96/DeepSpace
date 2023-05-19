@@ -7,6 +7,7 @@
 #include "FuzzyLogic.h"
 #include "NavigationSystem.h"
 #include "AIController.h"
+#include "BT/NoticeSomethingBT.h"
 #include "Components/ActorComponent.h"
 #include "Alfred.generated.h"
 
@@ -57,7 +58,7 @@ public:
 	//INIT AI FUNCTION
 	void InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
 	            TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage, TObjectPtr<
-	            UWarningBT> WarningBT);
+		            UWarningBT> WarningBT, TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT);
 	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -77,7 +78,7 @@ protected:
 	
 	EnemyKnowledge EnemyData;
 	bool bIsPlayerInTheViewBox, bIsPlayerInTheHearingSphere;
-	bool bHasSeen;
+	bool bHasSeen, bHasNoticeSomething;
 	FHitResult HitResult;
 	int seeCount = 0;
 	FuzzyLogic SeeSet, NonHearSet;

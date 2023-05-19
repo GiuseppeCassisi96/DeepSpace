@@ -18,17 +18,8 @@ TMap<EEnemyState, UBTInterface*>& UAlfredFSM::GetStates()
 
 ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 {
-	try
-	{
-		States[CurrentState]->bIsStopped = false;
-		return States[CurrentState]->RunTree();
-	}
-	catch (ActionFailException e)
-	{
-		std::cout <<  e.what() << "\n";
-		return ETaskExeState::Fail;
-	}
-	
+	States[CurrentState]->bIsStopped = false;
+	return States[CurrentState]->RunTree();
 }
 
 void UAlfredFSM::StopAction()

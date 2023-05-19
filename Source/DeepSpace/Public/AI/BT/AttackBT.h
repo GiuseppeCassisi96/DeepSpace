@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BTInterface.h"
-#include "BTNodes/SelectorBT.h"
-#include "BTNodes/SequenceBT.h"
 #include "NavigationSystem.h"
 #include "UObject/NoExportTypes.h"
 #include "GameFramework/Character.h"

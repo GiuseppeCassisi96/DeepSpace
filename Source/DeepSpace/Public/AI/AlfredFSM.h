@@ -3,13 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FSMState.h"
+#include "BT/AttackBT.h"
+#include "BT/CalmBT.h"
+#include "BT/WarningBT.h"
+#include "BT/NoticeSomethingBT.h"
 #include "AlfredFSM.generated.h"
 
 
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class EEnemyState : uint8
+{
+	Calm,
+	Warning,
+	Attack,
+	Ally,
+	NoticeSomething
+};
 UCLASS(ClassGroup = (FSM), meta = (BlueprintSpawnableComponent))
 class DEEPSPACE_API UAlfredFSM : public UActorComponent
 {
@@ -40,16 +52,6 @@ protected:
 	EEnemyState CurrentState, InitialState;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")
 	TMap<EEnemyState, UBTInterface*> States;
-	UPROPERTY()
-	TObjectPtr<UFSMState> CalmState;
-	UPROPERTY()
-	TObjectPtr<UFSMState> HearingState;
-	UPROPERTY()
-	TObjectPtr<UFSMState> WarningState;
-	UPROPERTY()
-	TObjectPtr<UFSMState> AttackState;
-	UPROPERTY()
-	TObjectPtr<UFSMState> AllyState;
 	
 
 

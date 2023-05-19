@@ -25,7 +25,8 @@ void AMainEnemy::BeginPlay()
 	CalmBT = NewObject<UCalmBT>();
 	AttackBT = NewObject<UAttackBT>();
 	WarningBT = NewObject<UWarningBT>();
-	AlfredAI->InitAI(CalmBT, AttackBT, AlfredFSM, this, typeDamage,WarningBT);
+	NoticeSomethingBT = NewObject<UNoticeSomethingBT>();
+	AlfredAI->InitAI(CalmBT, AttackBT, AlfredFSM, this, typeDamage,WarningBT, NoticeSomethingBT);
 	
 }
 
