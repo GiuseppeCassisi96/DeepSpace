@@ -93,23 +93,23 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 	{
 		isMovementRight = true;
 		isMovementLeft = false;
-		SetState(PlayerAnimState::Walk);
+		SetState(AnimState::Walk);
 		if(isCrouch)
 		{
 			isMovementRight = false;
 			isCrouchMovementRight = true;
 			isCrouchMovementLeft = false;
-			SetState(PlayerAnimState::Crouch);
+			SetState(AnimState::Crouch);
 		}
 	}
 	else if (inputValue.Y < 0.0f)
 	{
-		SetState(PlayerAnimState::Walk);
+		SetState(AnimState::Walk);
 		isMovementRight = false;
 		isMovementLeft = true;
 		if (isCrouch)
 		{
-			SetState(PlayerAnimState::Crouch);
+			SetState(AnimState::Crouch);
 			isMovementLeft = false;
 			isCrouchMovementRight = false;
 			isCrouchMovementLeft = true;
@@ -126,23 +126,23 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 	//Forward movement
 	if(inputValue.X < 0)
 	{
-		SetState(PlayerAnimState::Walk);
+		SetState(AnimState::Walk);
 		isMovementBack = true;
 		if (isCrouch)
 		{
-			SetState(PlayerAnimState::Crouch);
+			SetState(AnimState::Crouch);
 			isMovementBack = false;
 			isCrouchMovementBack = true;
 		}
 	}
 	else if(inputValue.X > 0)
 	{
-		SetState(PlayerAnimState::Walk);
+		SetState(AnimState::Walk);
 		isMovementBack = false;
 		isCrouchMovementBack = false;
 		if (isCrouch)
 		{
-			SetState(PlayerAnimState::Crouch);
+			SetState(AnimState::Crouch);
 		}
 	}
 	else
@@ -202,12 +202,12 @@ void AMainCharacter::Run(const FInputActionValue& actionValue)
 	if(actionValue.Get<bool>() && forwardMovementValue > 0 && rightMovementValue == 0 && !isCrouch)
 	{
 		movementSpeed =  1.7f;
-		SetState(PlayerAnimState::Run);
+		SetState(AnimState::Run);
 	}
 	else
 	{
 		movementSpeed = startMovementSpeed;
-		SetState(PlayerAnimState::Run);
+		SetState(AnimState::Run);
 	}
 }
 
@@ -219,26 +219,20 @@ void AMainCharacter::Throw(const FInputActionValue& actionValue)
 	obj->ItemMesh->AddForce(300000.0f * GetActorForwardVector());
 }
 
-TArray<FVector> AMainCharacter::GetMainCharacterBones()
+TArray<FVector> AMainCharacter::GetCharacterBones()
 {
-	bones[0] = GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace);
-	bones[1] = GetMesh()->GetBoneLocation("LeftShoulder", EBoneSpaces::WorldSpace);
-	bones[2] = GetMesh()->GetBoneLocation("RightShoulder", EBoneSpaces::WorldSpace);
-	bones[3] = GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace);
-	bones[4] = GetMesh()->GetBoneLocation("LeftLeg", EBoneSpaces::WorldSpace);
-	bones[5] = GetMesh()->GetBoneLocation("RightLeg", EBoneSpaces::WorldSpace);
-	return bones;
+	return Super::GetCharacterBones();
 }
 
-void AMainCharacter::SetState(PlayerAnimState newState)
+void AMainCharacter::SetState(AnimState newState)
 {
 	state = newState;
 }
 
-void AMainCharacter::TakeDamageFromEnemy(AActor* Actor, float damage, const UDamageType* type, AController* Contr,
-	AActor* a)
+void AMainCharacter::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, a->GetHumanReadableName());
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DamageCauser->GetActorLabel());
 }
 
 

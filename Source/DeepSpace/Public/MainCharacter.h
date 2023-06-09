@@ -11,6 +11,7 @@
 #include "InputMappingContext.h"
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
+#include "BaseMain.h"
 #include "Engine/Engine.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Animation/AnimInstance.h"
@@ -22,15 +23,9 @@
 #include "MainCharacter.generated.h"
 
 
-enum class PlayerAnimState
-{
-	Idle = 0,
-	Walk = 300,
-	Run = 500,
-	Crouch = 0,
-};
+
 UCLASS()
-class DEEPSPACE_API AMainCharacter : public ACharacter
+class DEEPSPACE_API AMainCharacter : public ABaseMain
 {
 	GENERATED_BODY()
 
@@ -48,10 +43,11 @@ public:
 	void Aim(const FInputActionValue& actionValue);
 	void Run(const FInputActionValue& actionValue);
 	void Throw(const FInputActionValue& actionValue);
-	TArray<FVector> GetMainCharacterBones();
-	void SetState(PlayerAnimState newState);
+	virtual TArray<FVector> GetCharacterBones() override;
+	void SetState(AnimState newState);
 	UFUNCTION()
-		void TakeDamageFromEnemy(AActor* Actor, float damage, const UDamageType* type, AController* Contr, AActor* a);
+	void TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+		AController* InstigatedBy, AActor* DamageCauser);
 	
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
@@ -95,13 +91,6 @@ public:
 	float springArmLenght;
 	float startMovementSpeed;
 	float forwardMovementValue, rightMovementValue;
-	TArray<FVector> bones;
-	PlayerAnimState state;
-	
-	
-	
-	
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

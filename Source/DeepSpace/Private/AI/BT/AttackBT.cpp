@@ -65,7 +65,7 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 	float currentDinstance = FVector::Dist(playerRefBT->GetActorLocation(), ownerBT->GetActorLocation());
 	GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Red,
 		FString::Printf(TEXT("Current Dist: %f"), currentDinstance));
-	if (currentDinstance > 82.0f)
+	if (currentDinstance > 92.0f)
 	{
 		return ETaskExeState::Success;
 	}
@@ -76,7 +76,7 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
 	AIController->MoveToLocation(playerRefBT->GetActorLocation(),
-		2.0f);
+		15.0f);
 	return ETaskExeState::Success;//Success !
 	
 }

@@ -14,7 +14,8 @@
 
 struct EnemyKnowledge
 {
-	AMainCharacter* PlayerCharacter;
+	TArray<TObjectPtr<ABaseMain>> CharactersSeen;
+	TArray<TObjectPtr<ABaseMain>> CharactersHeard;
 	TArray<FVector> bonesOfPlayer;
 };
 class AMainEnemy;
@@ -62,9 +63,19 @@ public:
 	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	void SetIsAttacked(TObjectPtr<AMainEnemy> EnemyThatAttack);
+	void ResetAfterDestroy();
 
 	UPROPERTY()
 	UNavigationSystemV1* navSys;
+	UPROPERTY(EditInstanceOnly, Category="AIProperties")
+	bool isAlly;
+	UPROPERTY()
+	bool isAttacked;
+	UPROPERTY()
+	bool bHasSeen;
+	EnemyKnowledge EnemyData;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -75,10 +86,8 @@ protected:
 	AAIController* ControllerNPC;
 	UPROPERTY()
 	TArray<AActor*> actorToIgnore;
-	
-	EnemyKnowledge EnemyData;
-	bool bIsPlayerInTheViewBox, bIsPlayerInTheHearingSphere;
-	bool bHasSeen, bHasNoticeSomething;
+
+	bool bHasNoticeSomething;
 	FHitResult HitResult;
 	int seeCount = 0;
 	FuzzyLogic SeeSet, NonHearSet;

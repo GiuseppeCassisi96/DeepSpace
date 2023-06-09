@@ -4,6 +4,7 @@
 #include "AI/BT/CalmBT.h"
 
 
+
 ETaskExeState UCalmBT::RunTree()
 {
 	if (!bIsStopped)
@@ -59,6 +60,7 @@ ETaskExeState UCalmBT::IsReachable()
 	{
 		return ETaskExeState::Success;//Success!
 	}
+	
 	return ETaskExeState::Fail;//Fail !
 }
 

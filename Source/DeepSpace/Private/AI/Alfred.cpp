@@ -39,6 +39,33 @@ void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	owner->AlfredFSM->CheckTreeStatus();
 }
 
+void UAlfred::SetIsAttacked(TObjectPtr<AMainEnemy> EnemyThatAttack)
+{
+	
+	if(!isAlly && !isAttacked)
+	{
+		EnemyData.CharactersHeard.Empty();
+		EnemyData.CharactersSeen.Empty();
+		EnemyData.CharactersSeen.Add(EnemyThatAttack);
+		EnemyData.CharactersHeard.Add(EnemyThatAttack);
+		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.CharactersSeen[0];
+		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
+		owner->AlfredFSM->RunActionOfCurrentState();
+		isAttacked = true;
+	}
+
+}
+
+void UAlfred::ResetAfterDestroy()
+{
+	EnemyData.CharactersHeard.Empty();
+	EnemyData.CharactersSeen.Empty();
+	EnemyData.bonesOfPlayer.Empty();
+	isAttacked = false;
+	bHasSeen = false;
+	GoToCalmState();
+}
+
 void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
 	if ((bHasSeen || bHasNoticeSomething) && Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
@@ -61,6 +88,8 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 	 *to take into account the environment of the level. Less is the 'pathCost' value more is the noise perceived. 
 	 */
 	float pathCost;
+	if(isAlly)
+		return;
 	if(!bHasSeen)
 	{
 		navSys->GetPathCost(this, owner->GetActorLocation(),
@@ -89,7 +118,6 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 
 void UAlfred::GoToCalmState()
 {
-	GEngine->AddOnScreenDebugMessage(1, 6.0f, FColor::Red, TEXT("calmState"));
 	owner->AlfredFSM->GoToNewState(EEnemyState::Calm);
 	owner->AlfredFSM->RunActionOfCurrentState();
 }
@@ -116,60 +144,29 @@ void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	if (otherActor)
 	{
-		AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
-		if (MainCharacter)
+		if(isAlly || isAttacked)
 		{
-			EnemyData.PlayerCharacter = MainCharacter;
-			bIsPlayerInTheViewBox = true;
-		}
-	}
-}
-
-void UAlfred::EnemyView()
-{
-	 //CAST RAY
-	if(bIsPlayerInTheViewBox)
-	{
-		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.PlayerCharacter;
-		EnemyData.bonesOfPlayer = EnemyData.PlayerCharacter->GetMainCharacterBones();
-		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
-		for(auto boneLocation: EnemyData.bonesOfPlayer)
-		{
-			UKismetSystemLibrary::LineTraceSingle(this, npcEyesLocation,
-				boneLocation, UEngineTypes::ConvertToTraceType(ECC_Camera), true,
-				actorToIgnore, EDrawDebugTrace::None, HitResult, true);
-			if (Cast<AMainCharacter>(HitResult.GetActor()))
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
+			if (MainEnemy)
 			{
-				seeCount++;
+				if (MainEnemy->Chartype == CharacterType::Player)
+					return;
+				if(MainEnemy == owner)
+					return;
+				EnemyData.CharactersSeen.Add(MainEnemy);
+			}
+		}
+		else
+		{
+			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			if (MainCharacter)
+			{
+				if (MainCharacter->Chartype == CharacterType::Enemy)
+					return;
+				EnemyData.CharactersSeen.Add(MainCharacter);
 			}
 		}
 	}
-
-	//ACTIONS BASED ON SEE COUNT
-	//I map the seeCount value into a membership value of my fuzzy set between 0 and 1
-	SeeSet.Fuzzification(6, seeCount);
-
-	if (SeeSet.Defuzzification( 0.65f))
-	{
-		//Pass to attack state: The enemy sees you !!
-		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
-		owner->AlfredFSM->RunActionOfCurrentState();
-		bHasSeen = true;
-		owner->GetWorldTimerManager().ClearTimer(GoToCalmTimer);
-	}
-	else if (SeeSet.Defuzzification( 0.39f))
-	{
-		if (!bHasSeen)
-		{
-			Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.PlayerCharacter->GetActorLocation();
-			//Pass to warning state: The enemy has seen something and getting worried
-			Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.PlayerCharacter->GetActorLocation();
-			owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
-			owner->AlfredFSM->RunActionOfCurrentState();
-			bHasNoticeSomething = true;
-		}
-	}
-	seeCount = 0;
 }
 
 void UAlfred::StopVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComponent,
@@ -177,11 +174,25 @@ void UAlfred::StopVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	if (otherActor)
 	{
-		AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
-		if (MainCharacter)
+		if (isAlly || isAttacked)
 		{
-			bIsPlayerInTheViewBox = false;
-			seeCount = 0;
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
+			if (MainEnemy)
+			{
+				if (MainEnemy->Chartype == CharacterType::Player)
+					return;
+				EnemyData.CharactersSeen.Remove(MainEnemy);
+			}
+		}
+		else
+		{
+			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			if (MainCharacter)
+			{
+				if (MainCharacter->Chartype == CharacterType::Enemy)
+					return;
+				EnemyData.CharactersSeen.Remove(MainCharacter);
+			}
 		}
 	}
 }
@@ -191,37 +202,134 @@ void UAlfred::StartHearSensors(UPrimitiveComponent* OverlappedComponent, AActor*
 {
 	if (otherActor)
 	{
-		AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
-		AThrowableItem* ThrowableItem = Cast<AThrowableItem>(otherActor);
+		
 		//When the player enters in the hear sphere
-		if (MainCharacter)
+		if (isAlly || isAttacked)
 		{
-			EnemyData.PlayerCharacter = MainCharacter;
-			bIsPlayerInTheHearingSphere = true;
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
+			if (MainEnemy)
+			{
+				if (MainEnemy->Chartype == CharacterType::Player)
+					return;
+				if (MainEnemy == owner)
+					return;
+				EnemyData.CharactersHeard.Add(MainEnemy);
+			}
 		}
-		if(ThrowableItem)
+		else
 		{
-			if(!ThrowableItem->OnThrowableItemEvent.IsBound())
+			
+			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			if (MainCharacter)
+			{
+				if (MainCharacter->Chartype == CharacterType::Enemy)
+					return;
+				EnemyData.CharactersHeard.Add(MainCharacter);
+			}
+		}
+
+		AThrowableItem* ThrowableItem = Cast<AThrowableItem>(otherActor);
+		if (ThrowableItem)
+		{
+			if (!ThrowableItem->OnThrowableItemEvent.IsBound())
 				ThrowableItem->OnThrowableItemEvent.AddDynamic(this, &UAlfred::ItemHitNearEnemy);
 		}
-		
+
 	}
 }
 
+void UAlfred::StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* otherActor,
+	UPrimitiveComponent* otherComponent, int otherBodyIndex)
+{
+	if (otherActor)
+	{
+		if (isAlly || isAttacked)
+		{
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
+			if (MainEnemy)
+			{
+				if (MainEnemy->Chartype == CharacterType::Player)
+					return;
+				EnemyData.CharactersHeard.Remove(MainEnemy);
+			}
+		}
+		else
+		{
+			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			if (MainCharacter)
+			{
+				if (MainCharacter->Chartype == CharacterType::Enemy)
+					return;
+				EnemyData.CharactersHeard.Remove(MainCharacter);
+			}
+		}
+	}
+}
+
+void UAlfred::EnemyView()
+{
+	 //CAST RAY
+	if(!EnemyData.CharactersSeen.IsEmpty())
+	{
+		EnemyData.bonesOfPlayer = EnemyData.CharactersSeen[0]->GetCharacterBones();
+		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
+		for(auto boneLocation: EnemyData.bonesOfPlayer)
+		{
+			UKismetSystemLibrary::LineTraceSingle(this, npcEyesLocation,
+				boneLocation, UEngineTypes::ConvertToTraceType(ECC_Camera), true,
+				actorToIgnore, EDrawDebugTrace::None, HitResult, true);
+			if (Cast<ABaseMain>(HitResult.GetActor()))
+			{
+				seeCount++;
+			}
+		}
+	
+
+		//ACTIONS BASED ON SEE COUNT
+		//I map the seeCount value into a membership value of my fuzzy set between 0 and 1
+		SeeSet.Fuzzification(EnemyData.bonesOfPlayer.Num(), seeCount);
+
+		if (SeeSet.Defuzzification( 0.65f))
+		{
+			Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.CharactersSeen[0];
+			//Pass to attack state: The enemy sees you !!
+			owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
+			ETaskExeState state = owner->AlfredFSM->RunActionOfCurrentState();
+			bHasSeen = true;
+			owner->GetWorldTimerManager().ClearTimer(GoToCalmTimer);
+		}
+		else if (SeeSet.Defuzzification( 0.39f))
+		{
+			if (!bHasSeen)
+			{
+				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
+				//Pass to warning state: The enemy has seen something and getting worried
+				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersSeen[0]->GetActorLocation();
+				owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
+				owner->AlfredFSM->RunActionOfCurrentState();
+				bHasNoticeSomething = true;
+			}
+		}
+		seeCount = 0;
+	}
+}
+
+
 void UAlfred::EnemyHearing()
 {
-	if(bIsPlayerInTheHearingSphere)
+	if(!EnemyData.CharactersHeard.IsEmpty())
 	{
 		/*The 'pathCost' indicates the noise that the enemy perceives. This noise use a pathfinding system in order
 	    *to take into account the environment of the level. Less is the 'pathCost' value more is the noise perceived.
 	    */
 		float pathCost;
-		
-		if(EnemyData.PlayerCharacter->state != PlayerAnimState::Crouch && !bHasSeen)
+		//UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), (bHasSeen ? TEXT("true") : TEXT("false")));
+		if(EnemyData.CharactersHeard[0]->state != AnimState::Crouch && !bHasSeen)
 		{
+			
 			navSys->GetPathCost(this, owner->GetActorLocation(),
-				EnemyData.PlayerCharacter->GetActorLocation(), pathCost);
-			float reduceFactor = static_cast<float>(EnemyData.PlayerCharacter->state);
+				EnemyData.CharactersHeard[0]->GetActorLocation(), pathCost);
+			float reduceFactor = static_cast<float>(EnemyData.CharactersHeard[0]->state);
 			//I'm sure that the pathCost is between 0.0f and 1500.0f
 			pathCost = std::clamp(pathCost - reduceFactor, 0.0f, 1500.0f);
 			NonHearSet.Fuzzification(1500.0f, pathCost);
@@ -233,25 +341,12 @@ void UAlfred::EnemyHearing()
 			if (NonHearSet.Defuzzification(0.60))
 			{
 				//Pass to hear state: The enemy hears something !!
-				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.PlayerCharacter->GetActorLocation();
-				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.PlayerCharacter->GetActorLocation();
+				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersHeard[0]->GetActorLocation();
+				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();
 				owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 				owner->AlfredFSM->RunActionOfCurrentState();
 				bHasNoticeSomething = true;
 			}
-		}
-	}
-}
-
-void UAlfred::StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* otherActor,
-	UPrimitiveComponent* otherComponent, int otherBodyIndex)
-{
-	if (otherActor)
-	{
-		AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
-		if (MainCharacter)
-		{
-			bIsPlayerInTheHearingSphere = false;
 		}
 	}
 }
