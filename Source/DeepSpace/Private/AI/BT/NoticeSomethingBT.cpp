@@ -31,7 +31,13 @@ void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavi
 
 ETaskExeState UNoticeSomethingBT::RunTree()
 {
-	return Super::RunTree();
+	if (!bIsStopped)
+	{
+		TreeExeState = RootTask->RunTask();
+		return TreeExeState;
+	}
+	TreeExeState = ETaskExeState::Stopped;
+	return ETaskExeState::Stopped;
 }
 
 void UNoticeSomethingBT::StopTree()

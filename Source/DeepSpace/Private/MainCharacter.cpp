@@ -47,12 +47,7 @@ void AMainCharacter::BeginPlay()
 	AnimInstance = CharMesh->GetAnimInstance();
 	springArmLenght = SpringArm->TargetArmLength;
 	startMovementSpeed = movementSpeed;
-	bones.Add(GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace));
-	bones.Add(GetMesh()->GetBoneLocation("LeftShoulder", EBoneSpaces::WorldSpace));
-	bones.Add(GetMesh()->GetBoneLocation("RightShoulder", EBoneSpaces::WorldSpace));
-	bones.Add(GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace));
-	bones.Add(GetMesh()->GetBoneLocation("LeftLeg", EBoneSpaces::WorldSpace));
-	bones.Add(GetMesh()->GetBoneLocation("RightLeg", EBoneSpaces::WorldSpace));
+	SetupBones();
 	OnTakeAnyDamage.AddDynamic(this, &AMainCharacter::TakeDamageFromEnemy);
 }
 

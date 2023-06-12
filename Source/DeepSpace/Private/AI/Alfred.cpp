@@ -17,17 +17,9 @@ UAlfred::UAlfred()
 void UAlfred::BeginPlay()
 {
 	Super::BeginPlay();
-	owner = Cast<AMainEnemy>(GetOwner());
-	if(owner)
-	{
-		ControllerNPC = Cast<AAIController>(owner->GetController());
-		ControllerNPC->ReceiveMoveCompleted.AddDynamic(this, &UAlfred::NPCReachsTheLocation);
-		owner->ViewBox->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartVisualSensors);
-		owner->ViewBox->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopVisualSensors);
-		owner->HearingSphere->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartHearSensors);
-		owner->HearingSphere->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopHearSensors);
-		navSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-	}
+	
+		
+	
 }
 
 // Called every frame
@@ -36,34 +28,38 @@ void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	EnemyView();
 	EnemyHearing();
-	owner->AlfredFSM->CheckTreeStatus();
+	GEngine->AddOnScreenDebugMessage(6, 2.0f,
+		FColor::Red, FString::Printf(TEXT("SizeSeen: %d"), EnemyData.CharactersSeen.Num()));
+	GEngine->AddOnScreenDebugMessage(7, 2.0f,
+		FColor::Red, FString::Printf(TEXT("SizeHeard: %d"), EnemyData.CharactersHeard.Num()));
 }
 
 void UAlfred::SetIsAttacked(TObjectPtr<AMainEnemy> EnemyThatAttack)
 {
 	
-	if(!isAlly && !isAttacked)
+	if(!(owner->Chartype == CharacterType::Ally) && !isAttacked)
 	{
+		
 		EnemyData.CharactersHeard.Empty();
 		EnemyData.CharactersSeen.Empty();
 		EnemyData.CharactersSeen.Add(EnemyThatAttack);
 		EnemyData.CharactersHeard.Add(EnemyThatAttack);
-		Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.CharactersSeen[0];
-		owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
-		owner->AlfredFSM->RunActionOfCurrentState();
 		isAttacked = true;
 	}
 
 }
 
-void UAlfred::ResetAfterDestroy()
+void UAlfred::ResetAfterDestroy(AMainEnemy* Enemy)
 {
-	EnemyData.CharactersHeard.Empty();
-	EnemyData.CharactersSeen.Empty();
-	EnemyData.bonesOfPlayer.Empty();
-	isAttacked = false;
-	bHasSeen = false;
-	GoToCalmState();
+	int n1 = EnemyData.CharactersHeard.Remove(Enemy);
+	int n2 = EnemyData.CharactersSeen.Remove(Enemy);
+	if(n1 + n2 > 0 && owner->AlfredFSM->GetCurrentState() == EEnemyState::Attack)
+	{
+		bHasSeen = false;
+		bHasNoticeSomething = false;
+		GoToCalmState();
+	}
+	
 }
 
 void UAlfred::NPCReachsTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
@@ -88,7 +84,7 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 	 *to take into account the environment of the level. Less is the 'pathCost' value more is the noise perceived. 
 	 */
 	float pathCost;
-	if(isAlly)
+	if(owner->Chartype == CharacterType::Ally)
 		return;
 	if(!bHasSeen)
 	{
@@ -118,6 +114,8 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 
 void UAlfred::GoToCalmState()
 {
+	
+	UE_LOG(LogTemp, Error, TEXT("GoToCalmState"));
 	owner->AlfredFSM->GoToNewState(EEnemyState::Calm);
 	owner->AlfredFSM->RunActionOfCurrentState();
 }
@@ -126,6 +124,15 @@ void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
                      TObjectPtr<UAlfredFSM> AlfredFSM, TObjectPtr<ACharacter> enemy, TSubclassOf<UDamageType> typeDamage, TObjectPtr<
 	                     UWarningBT> WarningBT, TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT)
 {
+	owner = Cast<AMainEnemy>(enemy);
+	owner->ViewBox->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartVisualSensors);
+	owner->ViewBox->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopVisualSensors);
+	owner->HearingSphere->OnComponentBeginOverlap.AddDynamic(this, &UAlfred::StartHearSensors);
+	owner->HearingSphere->OnComponentEndOverlap.AddDynamic(this, &UAlfred::StopHearSensors);
+	navSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	ControllerNPC = Cast<AAIController>(owner->GetController());
+	ControllerNPC->ReceiveMoveCompleted.AddDynamic(this, &UAlfred::NPCReachsTheLocation);
+
 	UNavigationSystemV1* NavigationSystemV1 = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 	CalmBT->InitTree(enemy, NavigationSystemV1);
 	AlfredFSM->GetStates().Add(EEnemyState::Calm, CalmBT);
@@ -144,26 +151,32 @@ void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	if (otherActor)
 	{
-		if(isAlly || isAttacked)
+		if(owner->Chartype == CharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
 			{
-				if (MainEnemy->Chartype == CharacterType::Player)
+				if(MainEnemy->Chartype == CharacterType::Player)
 					return;
 				if(MainEnemy == owner)
 					return;
-				EnemyData.CharactersSeen.Add(MainEnemy);
+				if(MainEnemy->Chartype == CharacterType::Ally)
+					return;
+				EnemyData.CharactersSeen.AddUnique(MainEnemy);
+				
 			}
 		}
 		else
 		{
 			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainCharacter)
 			{
-				if (MainCharacter->Chartype == CharacterType::Enemy)
-					return;
-				EnemyData.CharactersSeen.Add(MainCharacter);
+				EnemyData.CharactersSeen.AddUnique(MainCharacter);
+			}
+			if(MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			{
+				EnemyData.CharactersSeen.AddUnique(MainEnemy);
 			}
 		}
 	}
@@ -174,7 +187,7 @@ void UAlfred::StopVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	if (otherActor)
 	{
-		if (isAlly || isAttacked)
+		if (owner->Chartype == CharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
@@ -187,11 +200,17 @@ void UAlfred::StopVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor
 		else
 		{
 			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainCharacter)
 			{
 				if (MainCharacter->Chartype == CharacterType::Enemy)
 					return;
 				EnemyData.CharactersSeen.Remove(MainCharacter);
+			}
+
+			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			{
+				EnemyData.CharactersSeen.Remove(MainEnemy);
 			}
 		}
 	}
@@ -202,9 +221,7 @@ void UAlfred::StartHearSensors(UPrimitiveComponent* OverlappedComponent, AActor*
 {
 	if (otherActor)
 	{
-		
-		//When the player enters in the hear sphere
-		if (isAlly || isAttacked)
+		if (owner->Chartype == CharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
@@ -213,18 +230,23 @@ void UAlfred::StartHearSensors(UPrimitiveComponent* OverlappedComponent, AActor*
 					return;
 				if (MainEnemy == owner)
 					return;
-				EnemyData.CharactersHeard.Add(MainEnemy);
+				if (MainEnemy->Chartype == CharacterType::Ally)
+					return;
+				EnemyData.CharactersHeard.AddUnique(MainEnemy);
 			}
 		}
 		else
 		{
 			
 			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainCharacter)
 			{
-				if (MainCharacter->Chartype == CharacterType::Enemy)
-					return;
-				EnemyData.CharactersHeard.Add(MainCharacter);
+				EnemyData.CharactersHeard.AddUnique(MainCharacter);
+			}
+			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			{
+				EnemyData.CharactersHeard.AddUnique(MainEnemy);
 			}
 		}
 
@@ -243,7 +265,7 @@ void UAlfred::StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	if (otherActor)
 	{
-		if (isAlly || isAttacked)
+		if (owner->Chartype == CharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
@@ -256,11 +278,14 @@ void UAlfred::StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* 
 		else
 		{
 			AMainCharacter* MainCharacter = Cast<AMainCharacter>(otherActor);
+			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainCharacter)
 			{
-				if (MainCharacter->Chartype == CharacterType::Enemy)
-					return;
 				EnemyData.CharactersHeard.Remove(MainCharacter);
+			}
+			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			{
+				EnemyData.CharactersHeard.Remove(MainEnemy);
 			}
 		}
 	}
@@ -275,6 +300,7 @@ void UAlfred::EnemyView()
 		const FVector npcEyesLocation = owner->GetActorLocation() + FVector(0.0f, 0.0f, 60.0f);
 		for(auto boneLocation: EnemyData.bonesOfPlayer)
 		{
+			
 			UKismetSystemLibrary::LineTraceSingle(this, npcEyesLocation,
 				boneLocation, UEngineTypes::ConvertToTraceType(ECC_Camera), true,
 				actorToIgnore, EDrawDebugTrace::None, HitResult, true);
@@ -294,13 +320,13 @@ void UAlfred::EnemyView()
 			Cast<UAttackBT>(owner->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.CharactersSeen[0];
 			//Pass to attack state: The enemy sees you !!
 			owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
-			ETaskExeState state = owner->AlfredFSM->RunActionOfCurrentState();
+			owner->AlfredFSM->RunActionOfCurrentState();
 			bHasSeen = true;
 			owner->GetWorldTimerManager().ClearTimer(GoToCalmTimer);
 		}
 		else if (SeeSet.Defuzzification( 0.39f))
 		{
-			if (!bHasSeen)
+			if (owner->AlfredFSM->GetCurrentState() != EEnemyState::Attack)
 			{
 				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
 				//Pass to warning state: The enemy has seen something and getting worried
@@ -323,8 +349,8 @@ void UAlfred::EnemyHearing()
 	    *to take into account the environment of the level. Less is the 'pathCost' value more is the noise perceived.
 	    */
 		float pathCost;
-		//UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), (bHasSeen ? TEXT("true") : TEXT("false")));
-		if(EnemyData.CharactersHeard[0]->state != AnimState::Crouch && !bHasSeen)
+		if(EnemyData.CharactersHeard[0]->state != AnimState::Crouch && 
+			owner->AlfredFSM->GetCurrentState() != EEnemyState::Attack)
 		{
 			
 			navSys->GetPathCost(this, owner->GetActorLocation(),
@@ -340,6 +366,8 @@ void UAlfred::EnemyHearing()
 			 * of HearSet*/
 			if (NonHearSet.Defuzzification(0.60))
 			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f,
+					FColor::Red, TEXT("HEAR"));
 				//Pass to hear state: The enemy hears something !!
 				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersHeard[0]->GetActorLocation();
 				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();

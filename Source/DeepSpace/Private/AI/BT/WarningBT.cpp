@@ -52,7 +52,7 @@ void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSy
 ETaskExeState UWarningBT::CanReachRandPos()
 {
 	if (NavSys->GetRandomReachablePointInRadius(Location,
-		3000.0f, randLocation))
+		1800.0f, randLocation))
 	{
 		return ETaskExeState::Success;//Success!
 	}

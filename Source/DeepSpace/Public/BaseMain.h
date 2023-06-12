@@ -19,7 +19,8 @@ UENUM()
 enum class CharacterType
 {
 	Enemy,
-	Player
+	Player,
+	Ally
 };
 UCLASS()
 class DEEPSPACE_API ABaseMain : public ACharacter
@@ -33,8 +34,10 @@ public:
 	virtual void SetupBones();
 	UPROPERTY(EditDefaultsOnly, Category="Bones")
 	TArray<FName> bonesNames;
-	UPROPERTY(EditDefaultsOnly, Category = "CharacterType")
+	UPROPERTY(EditAnywhere, Category = "CharacterType")
 	CharacterType Chartype;
+	UPROPERTY(EditAnywhere, Category = "Health")
+	float health = 40.0f;
 	TArray<FVector> bones;
 	AnimState state;
 	

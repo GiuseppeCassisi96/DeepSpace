@@ -47,7 +47,6 @@ public:
 	 */
 	ETaskExeState RunActionOfCurrentState();
 	void StopAction();
-	void CheckTreeStatus();
 protected:
 	EEnemyState CurrentState, InitialState;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")

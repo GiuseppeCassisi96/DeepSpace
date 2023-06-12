@@ -23,6 +23,8 @@ public:
 	virtual void StopTree() override;
 	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type);
 	UFUNCTION()
+	ETaskExeState CheckLife();
+	UFUNCTION()
 	ETaskExeState CheckDistanceMoreThan();
 	UFUNCTION()
 	ETaskExeState GoTowardsThePlayer();
@@ -34,6 +36,8 @@ public:
 	void SetCanAttack();
 
 	//NODES OF TREE
+	UPROPERTY()
+	TObjectPtr<UTaskBT> checkLifeOfTarget;
 	UPROPERTY()
 	TObjectPtr<UTaskBT> checkDistanceMT;
 	UPROPERTY()

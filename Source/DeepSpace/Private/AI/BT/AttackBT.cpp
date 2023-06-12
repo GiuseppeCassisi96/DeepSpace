@@ -4,6 +4,7 @@
 #include "AI/BT/AttackBT.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "BaseMain.h"
 
 
 
@@ -11,8 +12,9 @@ ETaskExeState UAttackBT::RunTree()
 {
 	if (!bIsStopped)
 	{
-		TreeExeState = ETaskExeState::Success;
-		return RootTask->RunTask();
+		
+		TreeExeState = RootTask->RunTask();
+		return TreeExeState;
 	}
 	TreeExeState = ETaskExeState::Stopped;
 	return ETaskExeState::Stopped;
@@ -20,6 +22,7 @@ ETaskExeState UAttackBT::RunTree()
 
 void UAttackBT::StopTree()
 {
+
 	Super::StopTree();
 }
 
@@ -28,6 +31,7 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	Super::InitTree(owner, navSys);
 	//INSTANCIES CREATION PHASE:
 		//TASKS
+	checkLifeOfTarget = NewObject<UTaskBT>();
 	checkDistanceMT = NewObject<UTaskBT>();
 	followThePlayer = NewObject<UTaskBT>();
 	attackThePlayer = NewObject<UTaskBT>();
@@ -39,14 +43,17 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	secondSequence = NewObject<USequenceBT>();
 
 	//BINDING PHASE:
+	checkLifeOfTarget->Task.BindUFunction(this, FName("CheckLife"));
 	checkDistanceMT->Task.BindUFunction(this, FName("CheckDistanceMoreThan"));
 	followThePlayer->Task.BindUFunction(this, FName("GoTowardsThePlayer"));
 	attackThePlayer->Task.BindUFunction(this, TEXT("Attack"));
 	wait->Task.BindUFunction(this, TEXT("WaitFunc"));
 
 	//ADDING PHASE:
+	firstSequence->Tasks.Add(checkLifeOfTarget);
 	firstSequence->Tasks.Add(checkDistanceMT);
 	firstSequence->Tasks.Add(followThePlayer);
+	secondSequence->Tasks.Add(checkLifeOfTarget);
 	secondSequence->Tasks.Add(attackThePlayer);
 	secondSequence->Tasks.Add(wait);
 	sequenceSelector->Tasks.Add(firstSequence);
@@ -59,12 +66,17 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	typeDamage = type;
 }
 
+ETaskExeState UAttackBT::CheckLife()
+{
+	if (Cast<ABaseMain>(playerRefBT)->health <= 0.0f)
+		return ETaskExeState::Fail;
+	return ETaskExeState::Success;
+}
+
 //Condition
 ETaskExeState UAttackBT::CheckDistanceMoreThan()
 {
 	float currentDinstance = FVector::Dist(playerRefBT->GetActorLocation(), ownerBT->GetActorLocation());
-	GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Red,
-		FString::Printf(TEXT("Current Dist: %f"), currentDinstance));
 	if (currentDinstance > 92.0f)
 	{
 		return ETaskExeState::Success;
@@ -75,8 +87,7 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 //Action
 ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
-	AIController->MoveToLocation(playerRefBT->GetActorLocation(),
-		15.0f);
+	AIController->MoveToLocation(playerRefBT->GetActorLocation());
 	return ETaskExeState::Success;//Success !
 	
 }
@@ -96,7 +107,8 @@ ETaskExeState UAttackBT::WaitFunc()
 	if(bCanAttack)
 	{
 		bCanAttack = false;
-		ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this, &UAttackBT::SetCanAttack, 3.0f, false);
+		float waitTime = FMath::RandRange(2.0f, 5.0f);
+		ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this, &UAttackBT::SetCanAttack, waitTime, false);
 	}
 	return ETaskExeState::Success;
 }

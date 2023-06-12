@@ -21,6 +21,7 @@ public:
 	AMainEnemy();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual TArray<FVector> GetCharacterBones() override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -44,17 +45,17 @@ public:
 	USphereComponent* HearingSphere;
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<UDamageType> typeDamage;
-	UPROPERTY(EditAnywhere, Category = "EnemyHealth")
-	float health = 40.0f;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	UFUNCTION()
-		void ResetDeath();
+	void ResetDeath(AMainEnemy* Enemy);
 	FTimerHandle Handle;
 	FTimerDelegate TimerDelegate;
 };
+
+
 
 

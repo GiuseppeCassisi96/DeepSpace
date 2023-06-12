@@ -19,7 +19,15 @@ TMap<EEnemyState, UBTInterface*>& UAlfredFSM::GetStates()
 ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 {
 	States[CurrentState]->bIsStopped = false;
-	return States[CurrentState]->RunTree();
+	ETaskExeState state = States[CurrentState]->RunTree();
+	if(state == ETaskExeState::Fail)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 4.0f,
+			FColor::Red, TEXT("FAIL"));
+		GoToNewState(EEnemyState::Calm);
+		RunActionOfCurrentState();
+	}
+	return state;
 }
 
 void UAlfredFSM::StopAction()
@@ -27,13 +35,5 @@ void UAlfredFSM::StopAction()
 	States[CurrentState]->StopTree();
 }
 
-void UAlfredFSM::CheckTreeStatus()
-{
-	if(States[CurrentState]->TreeExeState == ETaskExeState::Fail)
-	{
-		GoToNewState(EEnemyState::Calm);
-		RunActionOfCurrentState();
-	}
-}
 
 

@@ -65,29 +65,26 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	void SetIsAttacked(TObjectPtr<AMainEnemy> EnemyThatAttack);
-	void ResetAfterDestroy();
+	void ResetAfterDestroy(AMainEnemy* Enemy);
 
 	UPROPERTY()
 	UNavigationSystemV1* navSys;
-	UPROPERTY(EditInstanceOnly, Category="AIProperties")
-	bool isAlly;
 	UPROPERTY()
+	AAIController* ControllerNPC;
+	UPROPERTY(EditAnywhere, Category="AIProperties")
+	TArray<AMainEnemy*> SameSideEnemy;
 	bool isAttacked;
-	UPROPERTY()
 	bool bHasSeen;
+	bool bHasNoticeSomething;
 	EnemyKnowledge EnemyData;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	
 	UPROPERTY()
 	AMainEnemy* owner;
 	UPROPERTY()
-	AAIController* ControllerNPC;
-	UPROPERTY()
 	TArray<AActor*> actorToIgnore;
-
-	bool bHasNoticeSomething;
 	FHitResult HitResult;
 	int seeCount = 0;
 	FuzzyLogic SeeSet, NonHearSet;
