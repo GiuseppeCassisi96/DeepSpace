@@ -379,6 +379,7 @@ void UAlfred::ResetAfterDestroy(AMainEnemy* Enemy)
 	int n2 = EnemyData.CharactersSeen.Remove(Enemy);
 	if(n1 + n2 > 0 && owner->AlfredFSM->GetCurrentState() == EEnemyState::Attack)
 	{
+		SeeSet.Set.membershipValue = 0.0f;
 		bHasSeen = false;
 		bHasNoticeSomething = false;
 		GoToCalmState();
