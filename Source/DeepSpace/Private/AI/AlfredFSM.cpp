@@ -6,6 +6,7 @@
 
 UAlfredFSM::UAlfredFSM()
 {
+	//Set the default state
 	InitialState = EEnemyState::Calm;
 	CurrentState = InitialState;
 }
@@ -18,6 +19,7 @@ TMap<EEnemyState, UBTInterface*>& UAlfredFSM::GetStates()
 
 ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 {
+	//I reset the boolean var for sure
 	States[CurrentState]->bIsStopped = false;
 	ETaskExeState state = States[CurrentState]->RunTree();
 	if(state == ETaskExeState::Fail)
@@ -30,10 +32,6 @@ ETaskExeState UAlfredFSM::RunActionOfCurrentState()
 	return state;
 }
 
-void UAlfredFSM::StopAction()
-{
-	States[CurrentState]->StopTree();
-}
 
 
 

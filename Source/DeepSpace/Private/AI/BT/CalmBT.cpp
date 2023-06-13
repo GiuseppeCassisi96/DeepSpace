@@ -10,6 +10,13 @@ ETaskExeState UCalmBT::RunTree()
 	if (!bIsStopped)
 	{
 		TreeExeState = RootTask->RunTask();
+		if(TreeExeState == ETaskExeState::TryAgain)
+		{
+			//I create a timer to implement until fail decorator
+			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
+				FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::RunTree),
+				10.0f, false);
+		}
 		return TreeExeState;
 	}
 	TreeExeState = ETaskExeState::Stopped;
@@ -22,24 +29,24 @@ ETaskExeState UCalmBT::RunTree()
 void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
 {
 	Super::InitTree(owner, navSys);
-	//INSTANCIES CREATION PHASE:
+	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskIsReachable = NewObject<UTaskBT>(this, FName("FTCalmBT"));
 	TaskGoToRandPosition = NewObject<UTaskBT>(this, FName("STCalmBT"));
-	//COMPOSITE TASKS
+		//COMPOSITE TASKS
 	FirstSequence = NewObject<USequenceBT>(this, FName("FSCalmBT"));
-	//DECORATOR
+		//DECORATOR
 	CalmUntilFail = NewObject<UUntilFailBT>(this, FName("UFCalmBT"));
 
-	//BINDING PHASE:
+	//BINDING PHASE: Here I bind the task with the function
 	TaskIsReachable->Task.BindUFunction(this, TEXT("IsReachable"));
 	TaskGoToRandPosition->Task.BindUFunction(this, TEXT("GoToRandPosition"));
 
-	//ADDING PHASE:
+	//ADDING PHASE: Here I add the task to the sequence array
 	FirstSequence->Tasks.Add(TaskIsReachable);
 	FirstSequence->Tasks.Add(TaskGoToRandPosition);
 
-	//PARAM SETTING PHASE:
+	//PARAM SETTING PHASE
 	CalmUntilFail->childTask = FirstSequence;
 	RootTask = CalmUntilFail;
 	bIsStopped = false;
@@ -68,10 +75,6 @@ ETaskExeState UCalmBT::IsReachable()
 ETaskExeState UCalmBT::GoToRandPosition()
 {
 	AIController->MoveToLocation(randLocation.Location);
-	//I create a timer to implement until fail decorator
-	ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-		FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::RunTree),
-		10.0f, false);
 	return ETaskExeState::Success;//Success !
 }
 

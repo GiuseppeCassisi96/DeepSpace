@@ -21,10 +21,12 @@ void ABaseMain::BeginPlay()
 
 TArray<FVector> ABaseMain::GetCharacterBones()
 {
+	//First of all I update the position of bones
 	for(int i = 0; i < bones.Num(); i++)
 	{
 		bones[i] = GetMesh()->GetBoneLocation(bonesNames[i], EBoneSpaces::WorldSpace);
 	}
+	//Then I returns the bones
 	return bones;
 }
 

@@ -6,6 +6,7 @@
 
 UUntilFailBT::UUntilFailBT()
 {
+	//Init the child task
 	childTask = NewObject<UTaskBT>();
 }
 

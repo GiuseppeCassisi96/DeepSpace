@@ -5,6 +5,7 @@
 
 ETaskExeState UTaskBT::RunTask()
 {
+	//I check if the delegate was bound with a function 
 	if(Task.IsBound())
 	{
 		return Task.Execute();

@@ -7,6 +7,10 @@
 #include "GameFramework/Character.h"
 #include "BaseMain.generated.h"
 
+/**
+ * @brief Are the animation states. The integer value associated represents the
+ * amount of noisnes of each anim state
+ */
 enum class AnimState
 {
 	Idle = 0,
@@ -14,7 +18,12 @@ enum class AnimState
 	Run = 500,
 	Crouch = 0,
 };
-
+/// <summary>
+/// Are the all possible char type
+///	Player: is the main player
+///	Ally: is an ally of the player and will attack the other enemies
+///	Enemy: is the classic enemy. Will attack the player and the allies of the player
+/// </summary>
 UENUM()
 enum class CharacterType
 {
@@ -23,6 +32,9 @@ enum class CharacterType
 	Ally
 };
 UCLASS()
+/// <summary>
+/// This is the base class for all character present in the prototype 
+/// </summary>
 class DEEPSPACE_API ABaseMain : public ACharacter
 {
 	GENERATED_BODY()
@@ -30,14 +42,23 @@ class DEEPSPACE_API ABaseMain : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ABaseMain();
+	/**
+	 * @brief Returns the updated position of character's bones
+	 * @return An array of positions
+	 */
 	virtual TArray<FVector> GetCharacterBones();
+	/**
+	 * @brief Gets the bones locations based on their names 
+	 */
 	virtual void SetupBones();
+
 	UPROPERTY(EditDefaultsOnly, Category="Bones")
 	TArray<FName> bonesNames;
 	UPROPERTY(EditAnywhere, Category = "CharacterType")
 	CharacterType Chartype;
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float health = 40.0f;
+
 	TArray<FVector> bones;
 	AnimState state;
 	

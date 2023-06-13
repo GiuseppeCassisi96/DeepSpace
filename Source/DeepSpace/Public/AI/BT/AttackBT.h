@@ -12,16 +12,36 @@
 /**
  * 
  */
+
+/// <summary>
+/// Is the class that represents the attack action. It will be ran when the enemy see a hostile
+/// entity. The behavior defined by this BT is enemy attacking 
+/// </summary>
 UCLASS()
 class DEEPSPACE_API UAttackBT : public UBTInterface
 {
 	GENERATED_BODY()
 public:
 	UAttackBT() = default;
+	/**
+	 * @brief Check if the BT is stopped or not and then run the root task of tree
+	 * @return The execution state of tree
+	 */
 	UFUNCTION()
 	virtual ETaskExeState RunTree() override;
+	/**
+	 * @brief Stop the tree
+	 */
 	virtual void StopTree() override;
+	/**
+	 * @brief Initialize the tree
+	 * @param owner The owner of the tree
+	 * @param navSys The navigation system
+	 * @param playerRef The reference to the target 
+	 * @param type The type of damage 
+	 */
 	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type);
+	//TASK FUNCTIONS-----------------------------
 	UFUNCTION()
 	ETaskExeState CheckLife();
 	UFUNCTION()
@@ -32,10 +52,14 @@ public:
 	ETaskExeState Attack();
 	UFUNCTION()
 	ETaskExeState WaitFunc();
+	//TASK FUNCTIONS-----------------------------
+	/**
+	 * @brief It is UFUNCTION bound to a timer delegate that set the "bCanAttack" to true
+	 */
 	UFUNCTION()
 	void SetCanAttack();
 
-	//NODES OF TREE
+	//NODES OF TREE-----------------------------
 	UPROPERTY()
 	TObjectPtr<UTaskBT> checkLifeOfTarget;
 	UPROPERTY()
@@ -46,22 +70,18 @@ public:
 	TObjectPtr<UTaskBT> attackThePlayer;
 	UPROPERTY()
 	TObjectPtr<UTaskBT> wait;
-
 	TObjectPtr<USelectorBT> sequenceSelector;
 	UPROPERTY()
 	TObjectPtr<USequenceBT> firstSequence;
 	UPROPERTY()
 	TObjectPtr<USequenceBT> secondSequence;
+	//NODES OF TREE-----------------------------
 
-
-	//PARAMATERS OF TREE
+	//PARAMATERS OF TREE-----------------------------
 	UPROPERTY()
 	TObjectPtr<ACharacter> playerRefBT;
-	
 	TSubclassOf<UDamageType> typeDamage;
 	bool bCanAttack = true;
-
-	//ATTACK TIMER
 	FTimerHandle TimerHandle;
-	
+	//PARAMATERS OF TREE-----------------------------
 };

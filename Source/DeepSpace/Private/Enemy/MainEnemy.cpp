@@ -26,7 +26,7 @@ void AMainEnemy::BeginPlay()
 	AttackBT = NewObject<UAttackBT>();
 	WarningBT = NewObject<UWarningBT>();
 	NoticeSomethingBT = NewObject<UNoticeSomethingBT>();
-	AlfredAI->InitAI(CalmBT, AttackBT, AlfredFSM, this, typeDamage,WarningBT, NoticeSomethingBT);
+	AlfredAI->InitAI(CalmBT, AttackBT, WarningBT, NoticeSomethingBT, AlfredFSM, this, typeDamage);
 	OnTakeAnyDamage.AddDynamic(this, &AMainEnemy::TakeDamageFromEnemy);
 	state = AnimState::Walk;
 	SetupBones();
@@ -36,7 +36,7 @@ void AMainEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 	AlfredAI->EnemyData.CharactersSeen.Empty();
 	AlfredAI->EnemyData.CharactersHeard.Empty();
-	AlfredAI->EnemyData.bonesOfPlayer.Empty();
+	AlfredAI->EnemyData.bonesOfCharacter.Empty();
 }
 
 void AMainEnemy::ResetDeath(AMainEnemy* Enemy)
@@ -81,6 +81,7 @@ void AMainEnemy::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const U
 		{
 			EnemyThatAttack->AlfredAI->SameSideEnemy[i]->AlfredAI->ResetAfterDestroy(this);
 		}
+		EnemyThatAttack->AlfredAI->isAttacked = false;
 		Destroy();
 	}
 
