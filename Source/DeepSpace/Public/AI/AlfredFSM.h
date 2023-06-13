@@ -14,14 +14,21 @@
  * 
  */
 UENUM(BlueprintType)
+/// <summary>
+/// Is the states of my FSM 
+/// </summary>
 enum class EEnemyState : uint8
 {
-	Calm,
+	Calm,//Is the default state
 	Warning,
 	Attack,
-	Ally,
 	NoticeSomething
 };
+/// <summary>
+/// This class represent the FSM of my AI. It handles the state changing operation and runs the
+///	current FSM. It uses also a TMap data structure where the key is the enemy state and the value
+///	is the BT. It has a Sensor Triggering Transaction Function (STTF) that performs the state transition
+/// </summary>
 UCLASS(ClassGroup = (FSM), meta = (BlueprintSpawnableComponent))
 class DEEPSPACE_API UAlfredFSM : public UActorComponent
 {
@@ -42,13 +49,18 @@ public:
 	}
 	FORCEINLINE EEnemyState GetCurrentState() { return CurrentState; }
 	/**
-	 * @brief Run the action of current state. If the action fails, it throws an 'ActionFailException'
-	 * @return returns ETaskExeState::Fail if the action fails, ETaskExeState::Success otherwise
+	 * @brief Run the action of current state. If the action fails, it goes to the calm state
+	 * @return returns the state of task
 	 */
 	ETaskExeState RunActionOfCurrentState();
-	void StopAction();
 protected:
 	EEnemyState CurrentState, InitialState;
+	/**
+	 * @brief It is basically the main structure of my FSM. I use a TMap as data structure,
+	 * where the key is the enemy state and the value is the BT. I bind every enemy state whit
+	 * a BT. UBTInterface is the interface of my all behavior trees, I use the polymorphism to
+	 * call the correct version of BT which inherits from UBTInterface
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")
 	TMap<EEnemyState, UBTInterface*> States;
 	

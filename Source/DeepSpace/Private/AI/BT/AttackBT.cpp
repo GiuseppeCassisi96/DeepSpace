@@ -29,7 +29,7 @@ void UAttackBT::StopTree()
 void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type)
 {
 	Super::InitTree(owner, navSys);
-	//INSTANCIES CREATION PHASE:
+	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	checkLifeOfTarget = NewObject<UTaskBT>();
 	checkDistanceMT = NewObject<UTaskBT>();
@@ -42,14 +42,14 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	firstSequence = NewObject<USequenceBT>();
 	secondSequence = NewObject<USequenceBT>();
 
-	//BINDING PHASE:
+	//BINDING PHASE: Here I bind the task with the function
 	checkLifeOfTarget->Task.BindUFunction(this, FName("CheckLife"));
 	checkDistanceMT->Task.BindUFunction(this, FName("CheckDistanceMoreThan"));
 	followThePlayer->Task.BindUFunction(this, FName("GoTowardsThePlayer"));
 	attackThePlayer->Task.BindUFunction(this, TEXT("Attack"));
 	wait->Task.BindUFunction(this, TEXT("WaitFunc"));
 
-	//ADDING PHASE:
+	//ADDING PHASE: Here I add the task to the sequence array and sequence to the selector array
 	firstSequence->Tasks.Add(checkLifeOfTarget);
 	firstSequence->Tasks.Add(checkDistanceMT);
 	firstSequence->Tasks.Add(followThePlayer);
@@ -66,6 +66,7 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	typeDamage = type;
 }
 
+//Condition
 ETaskExeState UAttackBT::CheckLife()
 {
 	if (Cast<ABaseMain>(playerRefBT)->health <= 0.0f)

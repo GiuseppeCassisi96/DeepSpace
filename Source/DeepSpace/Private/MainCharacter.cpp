@@ -77,12 +77,17 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::Move(const FInputActionValue& actionValue)
 {
 	FVector2D inputValue = actionValue.Get<FVector2D>();
+	//I Get the forward direction and right direction
 	FVector forwardDirection = GetActorForwardVector();
 	FVector rightDirection = GetActorRightVector();
+	//I compute the movement direction
 	FVector direction = forwardDirection * inputValue.X + rightDirection * inputValue.Y;
+
 	rightMovementValue = inputValue.Y;
 	forwardMovementValue = inputValue.X;
-
+	/*I'm setting the movement boolean vars based on player movement and also based on the fact
+	 * if it is in crouch animation state or not
+	 */
 	//Right movement
 	if(inputValue.Y > 0.0f)
 	{
@@ -145,6 +150,7 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 		isMovementBack = false;
 		isCrouchMovementBack = false;
 	}
+	//I compute the final movement 
 	FVector movement = direction * movementSpeed;
 	AddMovementInput(movement);
 }
@@ -159,6 +165,7 @@ void AMainCharacter::Rotation(const FInputActionValue& actionValue)
 	FRotator currentRotation = SpringArm->GetRelativeRotation();
 	float pitch = FMath::Clamp(currentRotation.Pitch, -50.0f, 20.0f);
 	SpringArm->SetRelativeRotation(FRotator(pitch, currentRotation.Yaw, currentRotation.Roll));
+	//If the character is aiming, I set the spine rotation with the rotation pitch value
 	if(isAiming)
 	{
 		spineRotation = FRotator(0.0f, 0.0f,
@@ -183,6 +190,7 @@ void AMainCharacter::Aim(const FInputActionValue& actionValue)
 	AnimInstance->Montage_JumpToSection("Aim");
 	AnimInstance->Montage_Play(aimMontage);
 	SpringArm->TargetArmLength = 50.0f;
+	//I reset the spine rotation if the character isn't aiming 
 	if(!isAiming)
 	{
 		AnimInstance->Montage_Stop(0.0f, aimMontage);
@@ -208,10 +216,16 @@ void AMainCharacter::Run(const FInputActionValue& actionValue)
 
 void AMainCharacter::Throw(const FInputActionValue& actionValue)
 {
-	FVector location = GetActorLocation() + GetActorForwardVector() * 100.0f;
-	FRotator rotation = FRotator::ZeroRotator;
-	AThrowableItem* obj = Cast<AThrowableItem>(GetWorld()->SpawnActor(ThrowableObj,&location,&rotation));
-	obj->ItemMesh->AddForce(300000.0f * GetActorForwardVector());
+	//I can throws an obj only if the player is aiming
+	if(isAiming)
+	{
+		FVector location = GetMesh()->GetBoneLocation("RightHand", EBoneSpaces::WorldSpace);
+		int index = GetMesh()->GetBoneIndex("RightHand");
+		FRotator rotation = FRotator::ZeroRotator;
+		AThrowableItem* obj = Cast<AThrowableItem>(GetWorld()->SpawnActor(ThrowableObj, &location, &rotation));
+		obj->ItemMesh->AddForce(500000.0f * -GetMesh()->GetBoneTransform(index).GetUnitAxis(EAxis::Y));
+	}
+	
 }
 
 TArray<FVector> AMainCharacter::GetCharacterBones()
@@ -227,6 +241,7 @@ void AMainCharacter::SetState(AnimState newState)
 void AMainCharacter::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
+	//I print the label of the DamageCauser
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DamageCauser->GetActorLabel());
 }
 

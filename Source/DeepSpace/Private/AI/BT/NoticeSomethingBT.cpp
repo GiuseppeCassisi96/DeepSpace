@@ -8,22 +8,22 @@
 void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, FVector location)
 {
 	Super::InitTree(owner, navSys);
-	//INSTANCIES CREATION PHASE:
+	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskCanReach = NewObject<UTaskBT>(this, FName("FTNoticeSomethingBT"));
 	TaskGoToLocation = NewObject<UTaskBT>(this, FName("STNoticeSomethingBT"));
-	//COMPOSITE TASKS
+		//COMPOSITE TASKS
 	FirstSequence = NewObject<USequenceBT>(this, FName("FSNoticeSomethingBT"));
 
-	//BINDING PHASE:
+	//BINDING PHASE: Here I bind the task with the function
 	TaskCanReach->Task.BindUFunction(this, TEXT("CanReach"));
 	TaskGoToLocation->Task.BindUFunction(this, TEXT("GoToLocation"));
 
-	//ADDING PHASE:
+	//ADDING PHASE: Here I add the task to the sequence array
 	FirstSequence->Tasks.Add(TaskCanReach);
 	FirstSequence->Tasks.Add(TaskGoToLocation);
 
-	//PARAM SETTING PHASE:
+	//PARAM SETTING PHASE
 	RootTask = FirstSequence;
 	SourceLocation = location;
 	bIsStopped = false;

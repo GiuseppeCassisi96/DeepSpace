@@ -11,6 +11,13 @@ ETaskExeState UWarningBT::RunTree()
 	if (!bIsStopped)
 	{
 		TreeExeState = RootTask->RunTask();
+		if (TreeExeState == ETaskExeState::TryAgain)
+		{
+			//I create a timer to implement until fail decorator
+			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
+				FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunTree),
+				10.0f, false);
+		}
 		return TreeExeState;
 	}
 	TreeExeState = ETaskExeState::Stopped;
@@ -26,26 +33,26 @@ void UWarningBT::StopTree()
 void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
 {
 	Super::InitTree(owner, navSys);
-	//INSTANCIES CREATION PHASE:
+	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskcanReachRandPos = NewObject<UTaskBT>(this, FName("FTWarningBT"));
 	TaskGoToRandPos = NewObject<UTaskBT>(this, FName("STWarningBT"));
 	//COMPOSITE TASKS
 	FirstSequence = NewObject<USequenceBT>(this, FName("FSWarningBT"));
 	//DECORATOR
-	CalmUntilFail = NewObject<UUntilFailBT>(this, FName("UFWarningBT"));
+	WarningUntilFail = NewObject<UUntilFailBT>(this, FName("UFWarningBT"));
 
-	//BINDING PHASE:
+	//BINDING PHASE: Here I bind the task with the function
 	TaskcanReachRandPos->Task.BindUFunction(this, TEXT("CanReachRandPos"));
 	TaskGoToRandPos->Task.BindUFunction(this, TEXT("GoToRandPos"));
 
-	//ADDING PHASE:
+	//ADDING PHASE: Here I add the task to the sequence array
 	FirstSequence->Tasks.Add(TaskcanReachRandPos);
 	FirstSequence->Tasks.Add(TaskGoToRandPos);
 
-	//PARAM SETTING PHASE:
-	CalmUntilFail->childTask = FirstSequence;
-	RootTask = CalmUntilFail;
+	//PARAM SETTING PHASE
+	WarningUntilFail->childTask = FirstSequence;
+	RootTask = WarningUntilFail;
 	bIsStopped = false;
 }
 //Condition
@@ -62,10 +69,6 @@ ETaskExeState UWarningBT::CanReachRandPos()
 ETaskExeState UWarningBT::GoToRandPos()
 {
 	AIController->MoveToLocation(randLocation.Location);
-	//I create a timer to implement until fail decorator
-	ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-		FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunTree),
-		10.0f, false);
 	return ETaskExeState::Success;//Success !
 }
 

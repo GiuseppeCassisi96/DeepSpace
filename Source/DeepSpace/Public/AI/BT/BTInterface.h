@@ -11,16 +11,36 @@
 #include "BTNodes/UntilFailBT.h"
 #include "GameFramework/Character.h"
 #include "BTInterface.generated.h"
+/// <summary>
+/// Is the interface for the BT, every BT class inherits from this class. It
+///	provides some general functions as RunTree, StopTree and InitTree that are
+///	used from all child class
+/// </summary>
 UCLASS()
 class DEEPSPACE_API UBTInterface : public UObject
 {
 public:
 	GENERATED_BODY()
-	virtual ~UBTInterface() = default;
 	UBTInterface();
+	virtual ~UBTInterface() = default;
+	/**
+	 * @brief Run the BT
+	 * @return The execution state of BT
+	 */
 	virtual ETaskExeState RunTree();
+	/**
+	 * @brief Stop the tree
+	 */
 	virtual void StopTree();
+	/**
+	 * @brief Initialize the tree
+	 * @param owner The owner of the tree
+	 * @param navSys The navigation system 
+	 */
 	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys);
+	/**
+	 * @brief The execution state of my tree
+	 */
 	ETaskExeState TreeExeState;
 	bool bIsStopped = false;
 	UPROPERTY()
