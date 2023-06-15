@@ -3,6 +3,7 @@
 
 #include "Enemy/MainEnemy.h"
 
+#include "Materials/MaterialInstanceDynamic.h"
 
 
 // Sets default values
@@ -29,6 +30,7 @@ void AMainEnemy::BeginPlay()
 	AlfredAI->InitAI(CalmBT, AttackBT, WarningBT, NoticeSomethingBT, AlfredFSM, this, typeDamage);
 	OnTakeAnyDamage.AddDynamic(this, &AMainEnemy::TakeDamageFromEnemy);
 	state = AnimState::Walk;
+
 	SetupBones();
 }
 void AMainEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -69,19 +71,33 @@ void AMainEnemy::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const U
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DamageCauser->GetActorLabel());
 	TObjectPtr<AMainEnemy> EnemyThatAttack = Cast<AMainEnemy>(DamageCauser);
-	AlfredAI->EnemyData.CharactersHeard.Empty();
-	AlfredAI->EnemyData.CharactersSeen.Empty();
-	AlfredAI->EnemyData.CharactersSeen.AddUnique(EnemyThatAttack);
-	AlfredAI->EnemyData.CharactersSeen.AddUnique(EnemyThatAttack);
+	if(EnemyThatAttack)
+	{
+		AlfredAI->EnemyData.CharactersHeard.Empty();
+		AlfredAI->EnemyData.CharactersSeen.Empty();
+		AlfredAI->EnemyData.CharactersSeen.AddUnique(EnemyThatAttack);
+		AlfredAI->EnemyData.CharactersSeen.AddUnique(EnemyThatAttack);
+	}
 	health -= Damage;
 	if (health <= 0.0f)
 	{
-		EnemyThatAttack->AlfredAI->ResetAfterDestroy(this);
-		for (int i = 0; i < EnemyThatAttack->AlfredAI->SameSideEnemy.Num(); i++)
+		if (EnemyThatAttack)
 		{
-			EnemyThatAttack->AlfredAI->SameSideEnemy[i]->AlfredAI->ResetAfterDestroy(this);
+			EnemyThatAttack->AlfredAI->ResetAfterDestroy(this);
+			for (int i = 0; i < EnemyThatAttack->AlfredAI->SameSideEnemy.Num(); i++)
+			{
+				AMainEnemy* currentEnemy = EnemyThatAttack->AlfredAI->SameSideEnemy[i];
+				if(IsValid(currentEnemy))
+				{
+					currentEnemy->AlfredAI->ResetAfterDestroy(this);
+				}
+				else
+				{
+					EnemyThatAttack->AlfredAI->SameSideEnemy.Remove(currentEnemy);
+				}
+			}
+			EnemyThatAttack->AlfredAI->isAttacked = false;
 		}
-		EnemyThatAttack->AlfredAI->isAttacked = false;
 		Destroy();
 	}
 

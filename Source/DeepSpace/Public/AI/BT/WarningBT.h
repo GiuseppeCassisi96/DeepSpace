@@ -55,6 +55,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<UUntilFailBT> WarningUntilFail;
 	//NODES OF TREE------------------------------
+	UPROPERTY()
+	UMaterialInstanceDynamic* MaterialInstance;
 	/**
 	 * @brief She is used to search the hostile entity near this location. This location
 	 * can represent the noise source location or the last known position of hostile entity

@@ -80,8 +80,11 @@ public:
 	//PARAMATERS OF TREE-----------------------------
 	UPROPERTY()
 	TObjectPtr<ACharacter> playerRefBT;
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
 	TSubclassOf<UDamageType> typeDamage;
 	bool bCanAttack = true;
 	FTimerHandle TimerHandle;
+
 	//PARAMATERS OF TREE-----------------------------
 };

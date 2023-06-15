@@ -25,7 +25,7 @@ enum class AnimState
 ///	Enemy: is the classic enemy. Will attack the player and the allies of the player
 /// </summary>
 UENUM()
-enum class CharacterType
+enum class ECharacterType
 {
 	Enemy,
 	Player,
@@ -55,7 +55,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Bones")
 	TArray<FName> bonesNames;
 	UPROPERTY(EditAnywhere, Category = "CharacterType")
-	CharacterType Chartype;
+	ECharacterType Chartype;
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float health = 40.0f;
 

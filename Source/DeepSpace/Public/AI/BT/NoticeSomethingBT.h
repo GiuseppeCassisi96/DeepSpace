@@ -53,6 +53,8 @@ public:
 	//NODES OF TREE------------------------------
 
 	//PARAMATERS OF TREE-----------------------------
+	UPROPERTY()
+	UMaterialInstanceDynamic* MaterialInstance;
 	FVector SourceLocation;
 	//PARAMATERS OF TREE-----------------------------
 };

@@ -45,6 +45,7 @@ public:
 	USphereComponent* HearingSphere;
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<UDamageType> typeDamage;
+	
 
 protected:
 	// Called when the game starts or when spawned

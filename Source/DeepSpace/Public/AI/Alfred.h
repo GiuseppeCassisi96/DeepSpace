@@ -132,7 +132,6 @@ public:
 	/**
 	 * @brief A list that keeps track of the enemies that belong to the same side
 	 */
-	UPROPERTY(EditAnywhere, Category="AIProperties")
 	TArray<AMainEnemy*> SameSideEnemy;
 	bool isAttacked;
 	bool bHasSeen;

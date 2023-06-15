@@ -4,6 +4,8 @@
 #include "AI/BT/NoticeSomethingBT.h"
 
 #include "NavigationPath.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, FVector location)
 {
@@ -27,12 +29,18 @@ void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavi
 	RootTask = FirstSequence;
 	SourceLocation = location;
 	bIsStopped = false;
+	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
+		ownerBT);
 }
 
 ETaskExeState UNoticeSomethingBT::RunTree()
 {
 	if (!bIsStopped)
 	{
+		FLinearColor colorViola(0.51f, 0.0f, 0.51f);
+		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorViola);
+		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
 		TreeExeState = RootTask->RunTask();
 		return TreeExeState;
 	}

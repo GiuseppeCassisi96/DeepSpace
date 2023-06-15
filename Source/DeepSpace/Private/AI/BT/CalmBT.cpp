@@ -3,12 +3,17 @@
 
 #include "AI/BT/CalmBT.h"
 
+#include "Components/SkeletalMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 
 ETaskExeState UCalmBT::RunTree()
 {
 	if (!bIsStopped)
 	{
+		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), FLinearColor::Green);
+		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
 		TreeExeState = RootTask->RunTask();
 		if(TreeExeState == ETaskExeState::TryAgain)
 		{
@@ -50,6 +55,10 @@ void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSyste
 	CalmUntilFail->childTask = FirstSequence;
 	RootTask = CalmUntilFail;
 	bIsStopped = false;
+	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
+		ownerBT);
+
+
 }
 
 

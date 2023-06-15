@@ -3,6 +3,8 @@
 
 #include "Items/ThrowableItem.h"
 
+#include "Enemy/MainEnemy.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -36,6 +38,9 @@ void AThrowableItem::OnGeneralHit(UPrimitiveComponent* HitComponent,
 	{
 		bIsFirstHit = false;
 		OnThrowableItemEvent.Broadcast(Hit.Location, itemNoisiness);
+		AMainEnemy* enemy = Cast<AMainEnemy>(OtherActor);
+		if(enemy && enemy->Chartype == ECharacterType::Enemy)
+			UGameplayStatics::ApplyDamage(enemy, 5.0f, this->GetInstigatorController(), this, typeDamage);
 	}
 	
 }

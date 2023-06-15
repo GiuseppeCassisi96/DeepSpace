@@ -25,6 +25,8 @@ public:
 	float itemNoisiness = 20.0f;
 	bool bIsFirstHit;
 	FThrowableItemEvent OnThrowableItemEvent;
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	TSubclassOf<UDamageType> typeDamage;
 
 protected:
 	// Called when the game starts or when spawned

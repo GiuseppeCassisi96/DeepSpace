@@ -26,7 +26,7 @@ void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActo
 	if (otherActor)
 	{
 		//First of all I check if the owner of this component is an ally or not
-		if (owner->Chartype == CharacterType::Ally)
+		if (owner->Chartype == ECharacterType::Ally)
 		{
 			//I check if the AMainEnemy reference is equal to owner or is another ally
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
@@ -34,7 +34,7 @@ void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActo
 			{
 				if (MainEnemy == owner)
 					return;
-				if (MainEnemy->Chartype == CharacterType::Ally)
+				if (MainEnemy->Chartype == ECharacterType::Ally)
 					return;
 				EnemyData.CharactersSeen.AddUnique(MainEnemy);
 
@@ -49,8 +49,13 @@ void UAlfred::StartVisualSensors(UPrimitiveComponent* OverlappedComponent, AActo
 			{
 				EnemyData.CharactersSeen.AddUnique(MainCharacter);
 			}
-			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			if (MainEnemy)
 			{
+				if(MainEnemy->Chartype == ECharacterType::Enemy)
+				{
+					SameSideEnemy.AddUnique(MainEnemy);
+					return;
+				}
 				EnemyData.CharactersSeen.AddUnique(MainEnemy);
 			}
 		}
@@ -62,12 +67,12 @@ void UAlfred::StopVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	if (otherActor)
 	{
-		if (owner->Chartype == CharacterType::Ally)
+		if (owner->Chartype == ECharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
 			{
-				if (MainEnemy->Chartype == CharacterType::Player)
+				if (MainEnemy->Chartype == ECharacterType::Player)
 					return;
 				EnemyData.CharactersSeen.Remove(MainEnemy);
 			}
@@ -78,12 +83,12 @@ void UAlfred::StopVisualSensors(UPrimitiveComponent* OverlappedComponent, AActor
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainCharacter)
 			{
-				if (MainCharacter->Chartype == CharacterType::Enemy)
+				if (MainCharacter->Chartype == ECharacterType::Enemy)
 					return;
 				EnemyData.CharactersSeen.Remove(MainCharacter);
 			}
 
-			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			if (MainEnemy && MainEnemy->Chartype != ECharacterType::Enemy)
 			{
 				EnemyData.CharactersSeen.Remove(MainEnemy);
 			}
@@ -96,16 +101,16 @@ void UAlfred::StartHearSensors(UPrimitiveComponent* OverlappedComponent, AActor*
 {
 	if (otherActor)
 	{
-		if (owner->Chartype == CharacterType::Ally)
+		if (owner->Chartype == ECharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
 			{
-				if (MainEnemy->Chartype == CharacterType::Player)
+				if (MainEnemy->Chartype == ECharacterType::Player)
 					return;
 				if (MainEnemy == owner)
 					return;
-				if (MainEnemy->Chartype == CharacterType::Ally)
+				if (MainEnemy->Chartype == ECharacterType::Ally)
 					return;
 				EnemyData.CharactersHeard.AddUnique(MainEnemy);
 			}
@@ -119,9 +124,14 @@ void UAlfred::StartHearSensors(UPrimitiveComponent* OverlappedComponent, AActor*
 			{
 				EnemyData.CharactersHeard.AddUnique(MainCharacter);
 			}
-			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			if (MainEnemy)
 			{
-				EnemyData.CharactersHeard.AddUnique(MainEnemy);
+				if (MainEnemy->Chartype == ECharacterType::Enemy)
+				{
+					SameSideEnemy.AddUnique(MainEnemy);
+					return;
+				}
+				EnemyData.CharactersSeen.AddUnique(MainEnemy);
 			}
 		}
 
@@ -140,12 +150,12 @@ void UAlfred::StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	if (otherActor)
 	{
-		if (owner->Chartype == CharacterType::Ally)
+		if (owner->Chartype == ECharacterType::Ally)
 		{
 			AMainEnemy* MainEnemy = Cast<AMainEnemy>(otherActor);
 			if (MainEnemy)
 			{
-				if (MainEnemy->Chartype == CharacterType::Player)
+				if (MainEnemy->Chartype == ECharacterType::Player)
 					return;
 				EnemyData.CharactersHeard.Remove(MainEnemy);
 			}
@@ -158,7 +168,7 @@ void UAlfred::StopHearSensors(UPrimitiveComponent* OverlappedComponent, AActor* 
 			{
 				EnemyData.CharactersHeard.Remove(MainCharacter);
 			}
-			if (MainEnemy && MainEnemy->Chartype != CharacterType::Enemy)
+			if (MainEnemy && MainEnemy->Chartype != ECharacterType::Enemy)
 			{
 				EnemyData.CharactersHeard.Remove(MainEnemy);
 			}
@@ -172,7 +182,7 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 	 *to take into account the environment of the level. Less is the 'pathCost' value more is the noise perceived.
 	 */
 	float pathCost;
-	if (owner->Chartype == CharacterType::Ally)
+	if (owner->Chartype == ECharacterType::Ally)
 		return;
 	if (owner->AlfredFSM->GetCurrentState() != EEnemyState::Attack)
 	{
@@ -283,8 +293,6 @@ void UAlfred::EnemyHearing()
 			 * of HearSet*/
 			if (NonHearSet.Defuzzification(0.60))
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f,
-					FColor::Red, TEXT("HEAR"));
 				//Pass to NoticeSomething state: The enemy hears something !!
 				Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersHeard[0]->GetActorLocation();
 				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();
@@ -332,7 +340,8 @@ void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
 //EVENT FUNCTIONS: These functions are event functions that will are invoked when a specific situation occurs
 void UAlfred::NPCReachesTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if ((bHasSeen || bHasNoticeSomething) && Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
+	EEnemyState state = owner->AlfredFSM->GetCurrentState();
+	if ((state == EEnemyState::Attack || state == EEnemyState::NoticeSomething) && Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f,
 			FColor::Red, TEXT("WARNING AFTER SEEN"));
@@ -348,8 +357,6 @@ void UAlfred::NPCReachesTheLocation(FAIRequestID RequestID, EPathFollowingResult
 
 void UAlfred::GoToCalmState()
 {
-
-	UE_LOG(LogTemp, Error, TEXT("GoToCalmState"));
 	owner->AlfredFSM->GoToNewState(EEnemyState::Calm);
 	owner->AlfredFSM->RunActionOfCurrentState();
 }
@@ -367,9 +374,12 @@ void UAlfred::BeginPlay()
 void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	EnemyView(); //RUN THE VIEW SENSOR
-	EnemyHearing(); //RUN THE HEAR SENSOR
+	if(owner)
+	{
+		EnemyView(); //RUN THE VIEW SENSOR
+		EnemyHearing(); //RUN THE HEAR SENSOR
+	}
+		
 }
 
 void UAlfred::ResetAfterDestroy(AMainEnemy* Enemy)
