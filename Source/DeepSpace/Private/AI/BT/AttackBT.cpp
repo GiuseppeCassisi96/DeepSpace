@@ -5,14 +5,17 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "BaseMain.h"
-
+#include "Materials/MaterialInstanceDynamic.h"
 
 
 ETaskExeState UAttackBT::RunTree()
 {
+	
 	if (!bIsStopped)
 	{
-		
+		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), FLinearColor::Red);
+		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
 		TreeExeState = RootTask->RunTask();
 		return TreeExeState;
 	}
@@ -64,6 +67,8 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	bCanAttack = true;
 	playerRefBT = playerRef;
 	typeDamage = type;
+	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
+		NULL);
 }
 
 //Condition

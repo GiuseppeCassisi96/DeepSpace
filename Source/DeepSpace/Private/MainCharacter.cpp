@@ -243,6 +243,14 @@ void AMainCharacter::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, con
 {
 	//I print the label of the DamageCauser
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DamageCauser->GetActorLabel());
+	Damage += 20; //Weakness of Human 
+	health -= Damage;
+	if(health <= 0.0f)
+	{
+		Destroy();
+		UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(),
+			EQuitPreference::Quit, false);
+	}
 }
 
 

@@ -59,5 +59,7 @@ public:
 	UPROPERTY()
 	TObjectPtr<UUntilFailBT> CalmUntilFail;
 	//NODES OF TREE------------------------------
+	UPROPERTY()
+	UMaterialInstanceDynamic* MaterialInstance;
 
 };

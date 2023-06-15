@@ -4,12 +4,18 @@
 #include "AI/BT/WarningBT.h"
 
 #include "NavigationPath.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 
 ETaskExeState UWarningBT::RunTree()
 {
 	if (!bIsStopped)
 	{
+		FLinearColor colorOrange(1.0f, 0.55f, 0.0f);
+		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorOrange);
+		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
 		TreeExeState = RootTask->RunTask();
 		if (TreeExeState == ETaskExeState::TryAgain)
 		{
@@ -54,6 +60,8 @@ void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSy
 	WarningUntilFail->childTask = FirstSequence;
 	RootTask = WarningUntilFail;
 	bIsStopped = false;
+	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
+		ownerBT);
 }
 //Condition
 ETaskExeState UWarningBT::CanReachRandPos()
