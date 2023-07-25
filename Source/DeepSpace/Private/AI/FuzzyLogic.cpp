@@ -19,7 +19,7 @@ bool FuzzyLogic::Defuzzification(const float cutOffValue)
 
 float FuzzyLogic::operator!()
 {
-	return  1 - Set.membershipValue;
+	return  1.0f - Set.membershipValue;
 }
 
 

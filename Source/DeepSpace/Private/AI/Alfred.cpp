@@ -204,7 +204,6 @@ void UAlfred::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 			Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = hitLocation;
 			Cast<UWarningBT>(owner->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = hitLocation;
 			owner->AlfredFSM->RunActionOfCurrentState();
-			bHasNoticeSomething = true;
 		}
 	}
 
@@ -235,7 +234,7 @@ void UAlfred::EnemyView()
 
 		//ACTIONS BASED ON SEE COUNT
 		//I map the seeCount value into a membership value of my fuzzy set between 0 and 1
-		SeeSet.Fuzzification(EnemyData.bonesOfCharacter.Num(), seeCount);
+		SeeSet.Fuzzification(static_cast<float>(EnemyData.bonesOfCharacter.Num()), seeCount);
 
 		if (SeeSet.Defuzzification(0.65f))
 		{
@@ -245,7 +244,6 @@ void UAlfred::EnemyView()
 			//Pass to attack state: The enemy sees you !!
 			owner->AlfredFSM->GoToNewState(EEnemyState::Attack);
 			owner->AlfredFSM->RunActionOfCurrentState();
-			bHasSeen = true;
 			owner->GetWorldTimerManager().ClearTimer(GoToCalmTimer);
 		}
 		else if (SeeSet.Defuzzification(0.39f))
@@ -258,7 +256,6 @@ void UAlfred::EnemyView()
 				//Pass to NoticeSomething state: The enemy has seen something and getting worried
 				owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 				owner->AlfredFSM->RunActionOfCurrentState();
-				bHasNoticeSomething = true;
 			}
 		}
 		seeCount = 0;
@@ -270,8 +267,9 @@ void UAlfred::EnemyHearing()
 {
 	if (!EnemyData.CharactersHeard.IsEmpty())
 	{
-		/*The 'pathCost' indicates the noise that the enemy perceives. This noise use a pathfinding system in order
-		*to take into account the environment of the level. Less is the 'pathCost' value more is the noise perceived.
+		/*The 'pathCost' indicates the nearness to the noise source. The auditory system use a pathfinding system
+		 *in order to take into account the environment of the level. Less is the 'pathCost' value more is
+		 *the noise perceived.
 		*/
 		float pathCost;
 		if (EnemyData.CharactersHeard[0]->state != AnimState::Crouch &&
@@ -284,13 +282,16 @@ void UAlfred::EnemyHearing()
 
 			//I'm sure that the pathCost is between 0.0f and 1500.0f
 			pathCost = std::clamp(pathCost - reduceFactor, 0.0f, 1500.0f);
+			/*Less is the pathCost less is the membership value of NonHearSet and more is the
+			 *membership value of HearSet, obtained as the negation of NonHearSet (1.0 - membValNonHearSet)*/
 			NonHearSet.Fuzzification(1500.0f, pathCost);
 
 			/*I obtain the HearSet simply denying the NonHearSet. When the membership value of NonHearSet is high
 			 *the membership value of HearSet is low and vice versa. I overload the operator '!'*/
 			NonHearSet.Set.membershipValue = !NonHearSet;
 			/*Now we have the negated value of membership value of NonHearSet, so we have the membership value
-			 * of HearSet*/
+			 * of HearSet. So for example if the membership value of NonHearSet is 0.10 the membership value
+			 * of HearSet is 0.90 (1.0 - 0.10)*/
 			if (NonHearSet.Defuzzification(0.60))
 			{
 				//Pass to NoticeSomething state: The enemy hears something !!
@@ -298,7 +299,6 @@ void UAlfred::EnemyHearing()
 				Cast<UNoticeSomethingBT>(owner->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();
 				owner->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 				owner->AlfredFSM->RunActionOfCurrentState();
-				bHasNoticeSomething = true;
 			}
 		}
 	}
@@ -341,17 +341,20 @@ void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
 void UAlfred::NPCReachesTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
 	EEnemyState state = owner->AlfredFSM->GetCurrentState();
-	if ((state == EEnemyState::Attack || state == EEnemyState::NoticeSomething) && Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
+	/*The first condition ('state == EEnemyState::Attack || state == EEnemyState::NoticeSomething')
+	 *is to check if the agent has seen an hostile entity or notice some noise. The second condition
+	 *is to check if the path following result is a success. The third condition is to check if the
+	 *agent see the hostile entity or not.
+	 */
+	if ((state == EEnemyState::Attack || state == EEnemyState::NoticeSomething) 
+		&& Result == EPathFollowingResult::Success && !SeeSet.Defuzzification(0.65f))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f,
-			FColor::Red, TEXT("WARNING AFTER SEEN"));
+
 		//Pass to warning state: He has noticed something and now he getting worried
 		owner->AlfredFSM->GoToNewState(EEnemyState::Warning);
 		owner->AlfredFSM->RunActionOfCurrentState();
 		owner->GetWorldTimerManager().SetTimer(GoToCalmTimer, this,
 			&UAlfred::GoToCalmState, 60.0f);
-		bHasSeen = false;
-		bHasNoticeSomething = false;
 	}
 }
 
@@ -390,8 +393,6 @@ void UAlfred::ResetAfterDestroy(AMainEnemy* Enemy)
 	if(n1 + n2 > 0 && owner->AlfredFSM->GetCurrentState() == EEnemyState::Attack)
 	{
 		SeeSet.Set.membershipValue = 0.0f;
-		bHasSeen = false;
-		bHasNoticeSomething = false;
 		GoToCalmState();
 	}
 	

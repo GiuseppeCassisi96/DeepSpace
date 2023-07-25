@@ -45,7 +45,8 @@ public:
 	USphereComponent* HearingSphere;
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<UDamageType> typeDamage;
-	
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
 
 protected:
 	// Called when the game starts or when spawned

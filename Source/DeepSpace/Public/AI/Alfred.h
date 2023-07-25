@@ -134,8 +134,6 @@ public:
 	 */
 	TArray<AMainEnemy*> SameSideEnemy;
 	bool isAttacked;
-	bool bHasSeen;
-	bool bHasNoticeSomething;
 	EnemyKnowledge EnemyData;
 
 protected:

@@ -35,7 +35,10 @@ class DEEPSPACE_API UAlfredFSM : public UActorComponent
 	GENERATED_BODY()
 public:
 	UAlfredFSM();
-	TMap<EEnemyState, UBTInterface*>& GetStates();
+	FORCEINLINE TMap<EEnemyState, UBTInterface*>& GetStates()
+	{
+		return States;
+	}
 	/**
 	 * @brief Is a Sensor Triggering Transaction Function (STTF) that 'fires' the transition from
 	 * one state to another, when the Alfred Sensors are triggered
@@ -52,7 +55,18 @@ public:
 	 * @brief Run the action of current state. If the action fails, it goes to the calm state
 	 * @return returns the state of task
 	 */
-	ETaskExeState RunActionOfCurrentState();
+	FORCEINLINE ETaskExeState RunActionOfCurrentState()
+	{
+		//I reset the boolean var for sure
+		States[CurrentState]->bIsStopped = false;
+		ETaskExeState state = States[CurrentState]->RunTree();
+		if(state == ETaskExeState::Fail)
+		{
+			GoToNewState(EEnemyState::Calm);
+			RunActionOfCurrentState();
+		}
+		return state;
+	}
 protected:
 	EEnemyState CurrentState, InitialState;
 	/**
@@ -61,7 +75,7 @@ protected:
 	 * a BT. UBTInterface is the interface of my all behavior trees, I use the polymorphism to
 	 * call the correct version of BT which inherits from UBTInterface
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess = true), Category = "States")
+	UPROPERTY(EditDefaultsOnly, Category = "States")
 	TMap<EEnemyState, UBTInterface*> States;
 	
 

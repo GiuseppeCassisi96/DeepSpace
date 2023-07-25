@@ -5,6 +5,7 @@
 
 #include "NavigationPath.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 
@@ -16,13 +17,15 @@ ETaskExeState UWarningBT::RunTree()
 		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorOrange);
 		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
 		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+		ownerBT->GetCharacterMovement()->MaxWalkSpeed = 250.0f;
 		TreeExeState = RootTask->RunTask();
 		if (TreeExeState == ETaskExeState::TryAgain)
 		{
 			//I create a timer to implement until fail decorator
+			const float randTime = FMath::RandRange(18.0f, 23.0f);
 			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
 				FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunTree),
-				10.0f, false);
+				randTime, false);
 		}
 		return TreeExeState;
 	}

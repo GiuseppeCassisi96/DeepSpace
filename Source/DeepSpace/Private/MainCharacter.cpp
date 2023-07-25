@@ -241,8 +241,6 @@ void AMainCharacter::SetState(AnimState newState)
 void AMainCharacter::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	//I print the label of the DamageCauser
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DamageCauser->GetActorLabel());
 	Damage += 20; //Weakness of Human 
 	health -= Damage;
 	if(health <= 0.0f)

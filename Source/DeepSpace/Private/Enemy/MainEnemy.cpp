@@ -30,7 +30,19 @@ void AMainEnemy::BeginPlay()
 	AlfredAI->InitAI(CalmBT, AttackBT, WarningBT, NoticeSomethingBT, AlfredFSM, this, typeDamage);
 	OnTakeAnyDamage.AddDynamic(this, &AMainEnemy::TakeDamageFromEnemy);
 	state = AnimState::Walk;
-
+	MaterialInstance = UMaterialInstanceDynamic::Create(GetMesh()->GetMaterial(0),
+		NULL);
+	if(Chartype == ECharacterType::Ally)
+	{
+		MaterialInstance->SetVectorParameterValue(TEXT("ColorMat"), FLinearColor::Blue);
+		GetMesh()->SetMaterial(0, MaterialInstance);
+	}
+	else
+	{
+		MaterialInstance->SetVectorParameterValue(TEXT("ColorMat"), FLinearColor::Red);
+		GetMesh()->SetMaterial(0, MaterialInstance);
+	}
+	
 	SetupBones();
 }
 void AMainEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -69,7 +81,6 @@ void AMainEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 void AMainEnemy::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType, 
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DamageCauser->GetActorLabel());
 	TObjectPtr<AMainEnemy> EnemyThatAttack = Cast<AMainEnemy>(DamageCauser);
 	if(EnemyThatAttack)
 	{

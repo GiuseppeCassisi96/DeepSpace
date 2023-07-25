@@ -5,6 +5,7 @@
 
 #include "NavigationPath.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, FVector location)
@@ -41,6 +42,7 @@ ETaskExeState UNoticeSomethingBT::RunTree()
 		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorViola);
 		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
 		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+		ownerBT->GetCharacterMovement()->MaxWalkSpeed = 250.0f;
 		TreeExeState = RootTask->RunTask();
 		return TreeExeState;
 	}

@@ -4,6 +4,7 @@
 #include "AI/BT/CalmBT.h"
 
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 
@@ -14,13 +15,15 @@ ETaskExeState UCalmBT::RunTree()
 		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), FLinearColor::Green);
 		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
 		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+		ownerBT->GetCharacterMovement()->MaxWalkSpeed = 180.0f;
 		TreeExeState = RootTask->RunTask();
 		if(TreeExeState == ETaskExeState::TryAgain)
 		{
+			const float randTime = FMath::RandRange(20.0f, 25.0f);
 			//I create a timer to implement until fail decorator
 			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
 				FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::RunTree),
-				10.0f, false);
+				randTime, false);
 		}
 		return TreeExeState;
 	}
