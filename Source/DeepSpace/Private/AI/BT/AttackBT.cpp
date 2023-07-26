@@ -37,9 +37,9 @@ void UAttackBT::StopTree()
 	Super::StopTree();
 }
 
-void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type)
+void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	checkLifeOfTarget = NewObject<UTaskBT>();
@@ -75,8 +75,6 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	//PARAM SETTING PHASE:
 	RootTask = sequenceSelector;
 	bCanAttack = true;
-	playerRefBT = playerRef;
-	typeDamage = type;
 	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
 		NULL);
 }
@@ -103,7 +101,7 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 //Action
 ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
-	AIController->MoveToLocation(playerRefBT->GetActorLocation());
+	AlfredAIController->MoveToLocation(playerRefBT->GetActorLocation());
 	return ETaskExeState::Success;
 	
 }

@@ -37,7 +37,7 @@ public:
 	 * @param owner The owner of the tree
 	 * @param navSys The navigation system
 	 */
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys) override;
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController) override;
 	/**
 	 * @brief Stop the tree
 	 */

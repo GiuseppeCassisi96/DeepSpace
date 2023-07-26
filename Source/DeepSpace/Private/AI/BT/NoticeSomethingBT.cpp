@@ -8,9 +8,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
-void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, FVector location)
+void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskCanReach = NewObject<UTaskBT>(this, FName("FTNoticeSomethingBT"));
@@ -28,7 +28,6 @@ void UNoticeSomethingBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavi
 
 	//PARAM SETTING PHASE
 	RootTask = FirstSequence;
-	SourceLocation = location;
 	bIsStopped = false;
 	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
 		ownerBT);
@@ -57,16 +56,18 @@ void UNoticeSomethingBT::StopTree()
 
 ETaskExeState UNoticeSomethingBT::CanReach()
 {
-	if(NavSys->FindPathToLocationSynchronously(ownerBT->GetWorld(),
-		ownerBT->GetActorLocation(),SourceLocation)->IsValid())
+	
+	if(NavSysBT->FindPathToLocationSynchronously(ownerBT->GetWorld(), 
+		ownerBT->GetActorLocation(), SourceLocation))
 	{
 		return ETaskExeState::Success;
 	}
 	return ETaskExeState::Fail;
+
 }
 
 ETaskExeState UNoticeSomethingBT::GoToLocation()
 {
-	AIController->MoveToLocation(SourceLocation);
+	AlfredAIController->MoveToLocation(SourceLocation);
 	return ETaskExeState::Success;
 }

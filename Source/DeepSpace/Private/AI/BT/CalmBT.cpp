@@ -34,9 +34,9 @@ ETaskExeState UCalmBT::RunTree()
 
 
 
-void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
+void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskIsReachable = NewObject<UTaskBT>(this, FName("FTCalmBT"));
@@ -74,7 +74,7 @@ void UCalmBT::StopTree()
 //Condition
 ETaskExeState UCalmBT::IsReachable()
 {
-	if (NavSys->GetRandomReachablePointInRadius(ownerBT->GetActorLocation(),
+	if (NavSysBT->GetRandomReachablePointInRadius(ownerBT->GetActorLocation(),
 		3000.0f, randLocation))
 	{
 		return ETaskExeState::Success;//Success!
@@ -86,7 +86,7 @@ ETaskExeState UCalmBT::IsReachable()
 //Action
 ETaskExeState UCalmBT::GoToRandPosition()
 {
-	AIController->MoveToLocation(randLocation.Location);
+	AlfredAIController->MoveToLocation(randLocation.Location);
 	return ETaskExeState::Success;//Success !
 }
 

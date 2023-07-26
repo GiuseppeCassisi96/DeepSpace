@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "NavigationSystem.h"
 #include "BTNodes/TaskBT.h"
+#include "AI/AlfredAIController.h"
 #include "BTNodes/SelectorBT.h"
 #include "BTNodes/SequenceBT.h"
 #include "BTNodes/UntilFailBT.h"
@@ -37,7 +38,7 @@ public:
 	 * @param owner The owner of the tree
 	 * @param navSys The navigation system 
 	 */
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys);
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AI);
 	/**
 	 * @brief The execution state of my tree
 	 */
@@ -48,9 +49,9 @@ public:
 	UPROPERTY()
 	TObjectPtr<ACharacter> ownerBT;
 	UPROPERTY()
-	TObjectPtr<UNavigationSystemV1> NavSys;
+	TObjectPtr<UNavigationSystemV1> NavSysBT;
 	UPROPERTY()
-	TObjectPtr<AAIController> AIController;
+	TObjectPtr<AAlfredAIController> AlfredAIController;
 	FNavLocation randLocation;
 	FTimerHandle TimerHandle;
 

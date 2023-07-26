@@ -16,7 +16,7 @@ enum class AnimState
 	Idle = 0,
 	Walk = 300,
 	Run = 500,
-	Crouch = 0,
+	Crouch = -1500,
 };
 /// <summary>
 /// Are the all possible char type

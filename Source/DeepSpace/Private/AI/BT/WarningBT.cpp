@@ -39,9 +39,9 @@ void UWarningBT::StopTree()
 	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
 }
 
-void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
+void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskcanReachRandPos = NewObject<UTaskBT>(this, FName("FTWarningBT"));
@@ -69,7 +69,7 @@ void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSy
 //Condition
 ETaskExeState UWarningBT::CanReachRandPos()
 {
-	if (NavSys->GetRandomReachablePointInRadius(Location,
+	if (NavSysBT->GetRandomReachablePointInRadius(Location,
 		1800.0f, randLocation))
 	{
 		return ETaskExeState::Success;//Success!
@@ -79,7 +79,7 @@ ETaskExeState UWarningBT::CanReachRandPos()
 //Action
 ETaskExeState UWarningBT::GoToRandPos()
 {
-	AIController->MoveToLocation(randLocation.Location);
+	AlfredAIController->MoveToLocation(randLocation.Location);
 	return ETaskExeState::Success;//Success !
 }
 

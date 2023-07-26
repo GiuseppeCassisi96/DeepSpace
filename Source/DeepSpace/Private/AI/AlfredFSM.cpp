@@ -11,6 +11,14 @@ UAlfredFSM::UAlfredFSM()
 	CurrentState = InitialState;
 }
 
+void UAlfredFSM::AddStates(TArray<UBTInterface*> BT)
+{
+	for(int i = 0; i < BT.Num(); i++)
+	{
+		States.Add(static_cast<EEnemyState>(i), BT[i]);
+	}
+}
+
 
 
 

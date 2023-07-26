@@ -37,8 +37,7 @@ public:
 	TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT;
 	UPROPERTY(EditAnywhere, Category= "AI")
 	TObjectPtr<UAlfred> AlfredAI;
-	UPROPERTY(EditAnywhere, Category = "FSM")
-	TObjectPtr<UAlfredFSM> AlfredFSM;
+
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;
 	UPROPERTY(EditDefaultsOnly, Category = "HearingSphere")
@@ -47,6 +46,12 @@ public:
 	TSubclassOf<UDamageType> typeDamage;
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
+	/**
+	 * @brief The AI controller used to send a move request to the enemy
+	 */
+	UPROPERTY()
+	AAlfredAIController* ControllerNPC;
+	
 
 protected:
 	// Called when the game starts or when spawned

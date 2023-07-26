@@ -19,10 +19,10 @@ UENUM(BlueprintType)
 /// </summary>
 enum class EEnemyState : uint8
 {
-	Calm,//Is the default state
-	Warning,
-	Attack,
-	NoticeSomething
+	Calm = 0,//Is the default state
+	Warning = 1,
+	Attack = 2,
+	NoticeSomething = 3
 };
 /// <summary>
 /// This class represent the FSM of my AI. It handles the state changing operation and runs the
@@ -35,6 +35,7 @@ class DEEPSPACE_API UAlfredFSM : public UActorComponent
 	GENERATED_BODY()
 public:
 	UAlfredFSM();
+	void AddStates(TArray<UBTInterface*> BT);
 	FORCEINLINE TMap<EEnemyState, UBTInterface*>& GetStates()
 	{
 		return States;
@@ -66,6 +67,16 @@ public:
 			RunActionOfCurrentState();
 		}
 		return state;
+	}
+	/**
+	 * @brief This function will be invoked in some cases, for example one of these cases is when
+	 * the warning period finish
+	 */
+	UFUNCTION()
+	FORCEINLINE void GoToDefaultState()
+	{
+		GoToNewState(EEnemyState::Calm);
+		RunActionOfCurrentState();
 	}
 protected:
 	EEnemyState CurrentState, InitialState;
