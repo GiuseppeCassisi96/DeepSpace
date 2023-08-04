@@ -58,7 +58,7 @@ ETaskExeState UNoticeSomethingBT::CanReach()
 {
 	
 	if(NavSysBT->FindPathToLocationSynchronously(ownerBT->GetWorld(), 
-		ownerBT->GetActorLocation(), SourceLocation))
+		ownerBT->GetActorLocation(), SourceLocation)->IsValid())
 	{
 		return ETaskExeState::Success;
 	}

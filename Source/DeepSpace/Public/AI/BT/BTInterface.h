@@ -52,7 +52,4 @@ public:
 	TObjectPtr<UNavigationSystemV1> NavSysBT;
 	UPROPERTY()
 	TObjectPtr<AAlfredAIController> AlfredAIController;
-	FNavLocation randLocation;
-	FTimerHandle TimerHandle;
-
 };

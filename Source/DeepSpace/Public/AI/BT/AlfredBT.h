@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "BTInterface.h"
+#include "AttackBT.h"
+#include "CalmBT.h"
+#include "WarningBT.h"
+#include "NoticeSomethingBT.h"
 #include "AlfredBT.generated.h"
 
 /// <summary>
@@ -18,14 +21,18 @@ class DEEPSPACE_API UAlfredBT : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UAlfredBT();
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void InitBehaviorTrees(TArray<UBTInterface*> Trees, TObjectPtr<ACharacter> owner, 
+	UPROPERTY()
+	TObjectPtr<UCalmBT> CalmBT;
+	UPROPERTY()
+	TObjectPtr<UAttackBT> AttackBT;
+	UPROPERTY()
+	TObjectPtr<UWarningBT> WarningBT;
+	UPROPERTY()
+	TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT;
+	UPROPERTY()
+	TArray<UBTInterface*> trees;
+	void InitBehaviorTrees(TObjectPtr<ACharacter> owner, 
 		TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AlfredAIController);
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 
 
 	

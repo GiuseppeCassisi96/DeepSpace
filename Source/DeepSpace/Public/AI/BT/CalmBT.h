@@ -61,5 +61,6 @@ public:
 	//NODES OF TREE------------------------------
 	UPROPERTY()
 	UMaterialInstanceDynamic* MaterialInstance;
-
+	FNavLocation randLocation;
+	FTimerHandle TimerHandle;
 };

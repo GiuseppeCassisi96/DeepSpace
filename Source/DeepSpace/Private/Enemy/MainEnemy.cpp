@@ -32,11 +32,7 @@ void AMainEnemy::BeginPlay()
 	ControllerNPC->SetAlfredController(this);
 	ControllerNPC->Possess(this);
 
-	CalmBT = NewObject<UCalmBT>();
-	AttackBT = NewObject<UAttackBT>();
-	WarningBT = NewObject<UWarningBT>();
-	NoticeSomethingBT = NewObject<UNoticeSomethingBT>();
-	AlfredAI->InitAI(CalmBT, AttackBT, WarningBT, NoticeSomethingBT);
+	AlfredAI->InitAI();
 	OnTakeAnyDamage.AddDynamic(this, &AMainEnemy::TakeDamageFromEnemy);
 	state = AnimState::Walk;
 	MaterialInstance = UMaterialInstanceDynamic::Create(GetMesh()->GetMaterial(0),
@@ -104,16 +100,16 @@ void AMainEnemy::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const U
 		if (EnemyThatAttack)
 		{
 			EnemyThatAttack->AlfredAI->GoToCalmStateAfterDestroy(this);
-			for (int i = 0; i < EnemyThatAttack->AlfredAI->AlfredSensing->SameSideEntity.Num(); i++)
+			for (int i = 0; i < EnemyThatAttack->AlfredAI->AlfredSensing->EnemyData.SameSideEntity.Num(); i++)
 			{
-				AMainEnemy* currentEnemy = EnemyThatAttack->AlfredAI->AlfredSensing->SameSideEntity[i];
+				AMainEnemy* currentEnemy = EnemyThatAttack->AlfredAI->AlfredSensing->EnemyData.SameSideEntity[i];
 				if(IsValid(currentEnemy))
 				{
 					currentEnemy->AlfredAI->GoToCalmStateAfterDestroy(this);
 				}
 				else
 				{
-					EnemyThatAttack->AlfredAI->AlfredSensing->SameSideEntity.Remove(currentEnemy);
+					EnemyThatAttack->AlfredAI->AlfredSensing->EnemyData.SameSideEntity.Remove(currentEnemy);
 				}
 			}
 			EnemyThatAttack->AlfredAI->isAttacked = false;

@@ -9,7 +9,7 @@ UAlfredSensing::UAlfredSensing()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 	owner = Cast<AMainEnemy>(GetOwner());
 	
 	// ...
@@ -33,7 +33,7 @@ void UAlfredSensing::StartVisualSensors(UPrimitiveComponent* OverlappedComponent
 					return;
 				if (MainEnemy->Chartype == ECharacterType::Ally)
 				{
-					SameSideEntity.AddUnique(MainEnemy);
+					EnemyData.SameSideEntity.AddUnique(MainEnemy);
 					return;
 				}
 				EnemyData.CharactersSeen.AddUnique(MainEnemy);
@@ -53,7 +53,7 @@ void UAlfredSensing::StartVisualSensors(UPrimitiveComponent* OverlappedComponent
 			{
 				if (MainEnemy->Chartype == ECharacterType::Enemy)
 				{
-					SameSideEntity.AddUnique(MainEnemy);
+					EnemyData.SameSideEntity.AddUnique(MainEnemy);
 					return;
 				}
 				EnemyData.CharactersSeen.AddUnique(MainEnemy);
@@ -112,7 +112,7 @@ void UAlfredSensing::StartHearSensors(UPrimitiveComponent* OverlappedComponent, 
 					return;
 				if (MainEnemy->Chartype == ECharacterType::Ally)
 				{
-					SameSideEntity.AddUnique(MainEnemy);
+					EnemyData.SameSideEntity.AddUnique(MainEnemy);
 					return;
 				}
 				EnemyData.CharactersHeard.AddUnique(MainEnemy);
@@ -130,7 +130,7 @@ void UAlfredSensing::StartHearSensors(UPrimitiveComponent* OverlappedComponent, 
 			{
 				if (MainEnemy->Chartype == ECharacterType::Enemy)
 				{
-					SameSideEntity.AddUnique(MainEnemy);
+					EnemyData.SameSideEntity.AddUnique(MainEnemy);
 					return;
 				}
 				EnemyData.CharactersSeen.AddUnique(MainEnemy);
@@ -210,8 +210,8 @@ void UAlfredSensing::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 		owner->GetWorldTimerManager().ClearTimer(owner->AlfredAI->GoToCalmTimer);
 		//Pass to hear state: The enemy hears something !!
 		owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
-		Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = hitLocation;
-		Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = hitLocation;
+		Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::NoticeSomething]->stateAction)->SourceLocation = hitLocation;
+		Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = hitLocation;
 		owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 	}
 }
@@ -245,9 +245,9 @@ void UAlfredSensing::EnemyView()
 		if (SeeSet.Defuzzification(0.65f))
 		{
 			//I'm setting the location also for the 'UWarningBT' for future purposes  
-			Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
-			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::Attack])->playerRefBT = EnemyData.CharactersSeen[0];
-			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::Attack])->typeDamage = owner->typeDamage;
+			Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
+			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Attack]->stateAction)->playerRefBT = EnemyData.CharactersSeen[0];
+			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Attack]->stateAction)->typeDamage = owner->typeDamage;
 			//Pass to attack state: The enemy sees you !!
 			owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::Attack);
 			owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
@@ -258,8 +258,8 @@ void UAlfredSensing::EnemyView()
 			if (owner->AlfredAI->AlfredFSM->GetCurrentState() != EEnemyState::Attack)
 			{
 				//I'm setting the location also for the 'UWarningBT' for future purposes  
-				Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
-				Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersSeen[0]->GetActorLocation();
+				Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
+				Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::NoticeSomething]->stateAction)->SourceLocation = EnemyData.CharactersSeen[0]->GetActorLocation();
 				//Pass to NoticeSomething state: The enemy has seen something and getting worried
 				owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 				owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
@@ -300,8 +300,8 @@ void UAlfredSensing::EnemyHearing()
 			if (NonHearSet.Defuzzification(0.60))
 			{
 				//Pass to NoticeSomething state: The enemy hears something !!
-				Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::Warning])->Location = EnemyData.CharactersHeard[0]->GetActorLocation();
-				Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetStates()[EEnemyState::NoticeSomething])->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();
+				Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = EnemyData.CharactersHeard[0]->GetActorLocation();
+				Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::NoticeSomething]->stateAction)->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();
 				owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 				owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 			}
@@ -314,22 +314,4 @@ void UAlfredSensing::SetOwner(TObjectPtr<AMainEnemy> ownerComponent)
 	owner = ownerComponent.Get();
 }
 
-
-// Called when the game starts
-void UAlfredSensing::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
-
-// Called every frame
-void UAlfredSensing::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
 

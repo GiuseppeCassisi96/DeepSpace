@@ -13,6 +13,7 @@ struct EnemyKnowledge
 	TArray<TObjectPtr<ABaseMain>> CharactersSeen;
 	TArray<TObjectPtr<ABaseMain>> CharactersHeard;
 	TArray<FVector> bonesOfCharacter;
+	TArray<AMainEnemy*> SameSideEntity;
 };
 
 /// <summary>
@@ -77,21 +78,16 @@ public:
 	 */
 	void EnemyHearing();
 	void SetOwner(TObjectPtr<AMainEnemy> ownerComponent);
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UPROPERTY()
 	TObjectPtr<AMainEnemy> owner;
 	/**
 	 * @brief A list that keeps track of the enemies that belong to the same side
 	 */
-	TArray<AMainEnemy*> SameSideEntity;
 	EnemyKnowledge EnemyData;
 	//Fuzzy logic vars
 	FuzzyLogic SeeSet, NonHearSet;
 	FHitResult HitResult;
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 	UPROPERTY()
 	TArray<AActor*> actorToIgnore;
 	int seeCount = 0;

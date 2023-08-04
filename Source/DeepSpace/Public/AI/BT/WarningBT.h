@@ -62,5 +62,6 @@ public:
 	 * can represent the noise source location or the last known position of hostile entity
 	 */
 	FVector Location;
-	
+	FNavLocation randLocation;
+	FTimerHandle TimerHandle;
 };

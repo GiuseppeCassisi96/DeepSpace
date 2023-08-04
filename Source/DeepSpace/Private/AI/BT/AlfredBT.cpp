@@ -5,31 +5,23 @@
 
 UAlfredBT::UAlfredBT()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
-
-// Called when the game starts
-void UAlfredBT::BeginPlay()
-{
-	Super::BeginPlay();
-
-	
-}
-
-
-// Called every frame
-void UAlfredBT::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
-void UAlfredBT::InitBehaviorTrees(TArray<UBTInterface*> Trees, TObjectPtr<ACharacter> owner, 
+void UAlfredBT::InitBehaviorTrees( TObjectPtr<ACharacter> owner, 
 	TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AlfredAIController)
 {
-	for(int i = 0; i < Trees.Num(); i++)
+	CalmBT = NewObject<UCalmBT>();
+	WarningBT = NewObject<UWarningBT>();
+	AttackBT = NewObject<UAttackBT>();
+	NoticeSomethingBT = NewObject<UNoticeSomethingBT>();
+	trees.Add(CalmBT);
+	trees.Add(WarningBT);
+	trees.Add(AttackBT);
+	trees.Add(NoticeSomethingBT);
+	for(int i = 0; i < trees.Num(); i++)
 	{
-		Trees[i]->InitTree(owner, navSys, AlfredAIController);
+		trees[i]->InitTree(owner, navSys, AlfredAIController);
 	}
 }
 

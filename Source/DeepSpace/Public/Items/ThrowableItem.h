@@ -15,8 +15,6 @@ class DEEPSPACE_API AThrowableItem : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AThrowableItem();
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 	UFUNCTION()
 	void OnGeneralHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	UPROPERTY(EditDefaultsOnly, Category="StaticMesh")

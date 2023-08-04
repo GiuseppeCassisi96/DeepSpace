@@ -13,7 +13,6 @@ void AAlfredAIController::SetAlfredController(AActor* NewOwner)
 
 void AAlfredAIController::NPCReachesTheLocation(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	GEngine->AddOnScreenDebugMessage(1, 4.0f, FColor::Red, TEXT("ENTER"));
 	EEnemyState state = ownerController->AlfredAI->AlfredFSM->GetCurrentState();
 	/*The first condition ('state == EEnemyState::Attack || state == EEnemyState::NoticeSomething')
 	 *is to check if the agent has seen an hostile entity or notice some noise. The second condition

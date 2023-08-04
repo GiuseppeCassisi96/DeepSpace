@@ -27,14 +27,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	UFUNCTION()
 	void TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,  AController* InstigatedBy, AActor* DamageCauser);
-	UPROPERTY()
-	TObjectPtr<UCalmBT> CalmBT;
-	UPROPERTY()
-	TObjectPtr<UAttackBT> AttackBT;
-	UPROPERTY()
-	TObjectPtr<UWarningBT> WarningBT;
-	UPROPERTY()
-	TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT;
 	UPROPERTY(EditAnywhere, Category= "AI")
 	TObjectPtr<UAlfred> AlfredAI;
 

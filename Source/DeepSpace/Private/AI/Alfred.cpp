@@ -14,6 +14,7 @@ UAlfred::UAlfred()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	//AI components creation
 	AlfredBT = CreateDefaultSubobject<UAlfredBT>(TEXT("AlfredBT"));
 	AlfredFSM = CreateDefaultSubobject<UAlfredFSM>(TEXT("AlfredFSM"));
 	AlfredSensing = CreateDefaultSubobject<UAlfredSensing>(TEXT("AlfredSensing"));
@@ -22,8 +23,7 @@ UAlfred::UAlfred()
 
 
 //INIT AI FUNCTION: This function is responsible to initialize the AI.
-void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT, TObjectPtr<
-	                     UWarningBT> WarningBT, TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT)
+void UAlfred::InitAI()
 {
 	owner = Cast<AMainEnemy>(GetOwner());
 	if(!owner)
@@ -37,10 +37,10 @@ void UAlfred::InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT,
 	owner->HearingSphere->OnComponentEndOverlap.AddDynamic(AlfredSensing.Get(), &UAlfredSensing::StopHearSensors);
 
 	owner->ControllerNPC->ReceiveMoveCompleted.AddDynamic(owner->ControllerNPC, &AAlfredAIController::NPCReachesTheLocation);
-	TArray<UBTInterface*> Trees{CalmBT,WarningBT,AttackBT,NoticeSomethingBT };
+
 	//Initialize and add to the FSM the Behavior trees
-	AlfredBT->InitBehaviorTrees(Trees,owner,owner->ControllerNPC->GetNavSys(), owner->ControllerNPC);
-	AlfredFSM->AddStates(Trees);
+	AlfredBT->InitBehaviorTrees(owner,owner->ControllerNPC->GetNavSys(), owner->ControllerNPC);
+	AlfredFSM->AddStates(AlfredBT->trees);
 
 	//Run the default state (Calm state)
 	AlfredFSM->RunActionOfCurrentState();

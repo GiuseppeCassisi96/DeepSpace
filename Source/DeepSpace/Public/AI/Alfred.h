@@ -44,13 +44,8 @@ public:
 	//INIT AI FUNCTION
 	/**
 	 * @brief This function is responsible to initialize the AI
-	 * @param CalmBT A reference to the behavior tree for the calm state
-	 * @param AttackBT A reference to the behavior tree for the attack state
-	 * @param WarningBT A reference to the behavior tree for the warning state
-	 * @param NoticeSomethingBT A reference to the behavior tree for the notice something state
 	 */
-	void InitAI(TObjectPtr<UCalmBT> CalmBT, TObjectPtr<UAttackBT> AttackBT, TObjectPtr<
-		            UWarningBT> WarningBT, TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT);
+	void InitAI();
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
