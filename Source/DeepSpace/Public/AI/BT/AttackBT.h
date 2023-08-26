@@ -78,6 +78,7 @@ public:
 	//PARAMATERS OF TREE-----------------------------
 	UPROPERTY()
 	TObjectPtr<ACharacter> playerRefBT;
+	FVector entityLocation;
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
 	TSubclassOf<UDamageType> typeDamage;

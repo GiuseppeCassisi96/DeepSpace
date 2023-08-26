@@ -16,6 +16,7 @@ enum class AnimState
 	Idle = 0,
 	Walk = 300,
 	Run = 500,
+	EnemyDefaultState = 400,
 	Crouch = -1500,
 };
 /// <summary>

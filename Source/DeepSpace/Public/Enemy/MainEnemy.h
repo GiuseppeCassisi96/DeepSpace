@@ -43,7 +43,6 @@ public:
 	 */
 	UPROPERTY()
 	AAlfredAIController* ControllerNPC;
-	
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,6 +52,7 @@ protected:
 	void ResetDeath(AMainEnemy* Enemy);
 	FTimerHandle Handle;
 	FTimerDelegate TimerDelegate;
+	
 };
 
 

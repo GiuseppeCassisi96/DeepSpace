@@ -212,7 +212,6 @@ void UAlfredSensing::ItemHitNearEnemy(FVector hitLocation, float itemNoisiness)
 		owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
 		Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::NoticeSomething]->stateAction)->SourceLocation = hitLocation;
 		Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = hitLocation;
-		owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 	}
 }
 
@@ -247,10 +246,10 @@ void UAlfredSensing::EnemyView()
 			//I'm setting the location also for the 'UWarningBT' for future purposes  
 			Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = EnemyData.CharactersSeen[0]->GetActorLocation();
 			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Attack]->stateAction)->playerRefBT = EnemyData.CharactersSeen[0];
+			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Attack]->stateAction)->entityLocation = EnemyData.CharactersSeen[0]->GetActorLocation();
 			Cast<UAttackBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Attack]->stateAction)->typeDamage = owner->typeDamage;
 			//Pass to attack state: The enemy sees you !!
 			owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::Attack);
-			owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 			owner->GetWorldTimerManager().ClearTimer(owner->AlfredAI->GoToCalmTimer);
 		}
 		else if (SeeSet.Defuzzification(0.39f))
@@ -262,7 +261,6 @@ void UAlfredSensing::EnemyView()
 				Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::NoticeSomething]->stateAction)->SourceLocation = EnemyData.CharactersSeen[0]->GetActorLocation();
 				//Pass to NoticeSomething state: The enemy has seen something and getting worried
 				owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
-				owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 			}
 		}
 		seeCount = 0;
@@ -303,7 +301,6 @@ void UAlfredSensing::EnemyHearing()
 				Cast<UWarningBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::Warning]->stateAction)->Location = EnemyData.CharactersHeard[0]->GetActorLocation();
 				Cast<UNoticeSomethingBT>(owner->AlfredAI->AlfredFSM->GetFSM()[EEnemyState::NoticeSomething]->stateAction)->SourceLocation = EnemyData.CharactersHeard[0]->GetActorLocation();
 				owner->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::NoticeSomething);
-				owner->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 			}
 		}
 	}

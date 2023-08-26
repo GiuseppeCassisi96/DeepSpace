@@ -42,6 +42,8 @@ public:
 	 * @brief Stop the tree
 	 */
 	virtual void StopTree() override;
+	UFUNCTION()
+	void RunAgain();
 
 	//TASK FUNCTIONS-----------------------------
 	UFUNCTION()
@@ -63,4 +65,5 @@ public:
 	UMaterialInstanceDynamic* MaterialInstance;
 	FNavLocation randLocation;
 	FTimerHandle TimerHandle;
+	bool bCanRunAgain = true;
 };

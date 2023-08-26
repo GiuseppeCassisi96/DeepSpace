@@ -13,19 +13,23 @@ ETaskExeState UWarningBT::RunTree()
 {
 	if (!bIsStopped)
 	{
-		FLinearColor colorOrange(1.0f, 0.55f, 0.0f);
-		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorOrange);
-		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
-		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
-		ownerBT->GetCharacterMovement()->MaxWalkSpeed = 250.0f;
-		TreeExeState = RootTask->RunTask();
-		if (TreeExeState == ETaskExeState::TryAgain)
+		if (bCanRunAgain)
 		{
-			//I create a timer to implement until fail decorator
-			const float randTime = FMath::RandRange(18.0f, 23.0f);
-			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-				FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunTree),
-				randTime, false);
+			FLinearColor colorOrange(1.0f, 0.55f, 0.0f);
+			MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorOrange);
+			ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+			ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+			ownerBT->GetCharacterMovement()->MaxWalkSpeed = 250.0f;
+			TreeExeState = RootTask->RunTask();
+			if (TreeExeState == ETaskExeState::TryAgain)
+			{
+				bCanRunAgain = false;
+				//I create a timer to implement until fail decorator
+				const float randTime = FMath::RandRange(18.0f, 23.0f);
+				ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
+					FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunAgain),
+					randTime, false);
+			}
 		}
 		return TreeExeState;
 	}
@@ -36,6 +40,7 @@ ETaskExeState UWarningBT::RunTree()
 void UWarningBT::StopTree()
 {
 	Super::StopTree();
+	bCanRunAgain = true;
 	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
 }
 
@@ -66,6 +71,12 @@ void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSy
 	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
 		ownerBT);
 }
+
+void UWarningBT::RunAgain()
+{
+	bCanRunAgain = true;
+}
+
 //Condition
 ETaskExeState UWarningBT::CanReachRandPos()
 {

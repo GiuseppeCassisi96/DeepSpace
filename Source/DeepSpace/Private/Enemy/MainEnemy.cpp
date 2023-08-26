@@ -34,7 +34,7 @@ void AMainEnemy::BeginPlay()
 
 	AlfredAI->InitAI();
 	OnTakeAnyDamage.AddDynamic(this, &AMainEnemy::TakeDamageFromEnemy);
-	state = AnimState::Walk;
+	state = AnimState::EnemyDefaultState;
 	MaterialInstance = UMaterialInstanceDynamic::Create(GetMesh()->GetMaterial(0),
 		NULL);
 	if(Chartype == ECharacterType::Ally)
@@ -89,8 +89,6 @@ void AMainEnemy::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const U
 	TObjectPtr<AMainEnemy> EnemyThatAttack = Cast<AMainEnemy>(DamageCauser);
 	if(EnemyThatAttack)
 	{
-		AlfredAI->AlfredSensing->EnemyData.CharactersHeard.Empty();
-		AlfredAI->AlfredSensing->EnemyData.CharactersSeen.Empty();
 		AlfredAI->AlfredSensing->EnemyData.CharactersSeen.AddUnique(EnemyThatAttack);
 		AlfredAI->AlfredSensing->EnemyData.CharactersSeen.AddUnique(EnemyThatAttack);
 	}
@@ -114,7 +112,7 @@ void AMainEnemy::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const U
 			}
 			EnemyThatAttack->AlfredAI->isAttacked = false;
 		}
-		Destroy();
+		Destroy(true);
 	}
 
 

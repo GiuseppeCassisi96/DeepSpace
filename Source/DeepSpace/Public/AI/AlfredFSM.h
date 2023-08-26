@@ -103,7 +103,6 @@ public:
 	FORCEINLINE void GoToDefaultState()
 	{
 		GoToNewState(EEnemyState::Calm);
-		RunActionOfCurrentState();
 	}
 protected:
 	EEnemyState CurrentState, InitialState;

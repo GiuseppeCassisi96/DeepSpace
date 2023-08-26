@@ -12,6 +12,8 @@
 #include "BTNodes/UntilFailBT.h"
 #include "GameFramework/Character.h"
 #include "BTInterface.generated.h"
+
+
 /// <summary>
 /// Is the interface for the BT, every BT class inherits from this class. It
 ///	provides some general functions as RunTree, StopTree and InitTree that are

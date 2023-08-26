@@ -38,6 +38,8 @@ public:
 	 * @param navSys The navigation system
 	 */
 	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController) override;
+	UFUNCTION()
+	void RunAgain();
 	//TASK FUNCTIONS-----------------------------
 	UFUNCTION()
 	ETaskExeState CanReachRandPos();
@@ -64,4 +66,5 @@ public:
 	FVector Location;
 	FNavLocation randLocation;
 	FTimerHandle TimerHandle;
+	bool bCanRunAgain = true;
 };

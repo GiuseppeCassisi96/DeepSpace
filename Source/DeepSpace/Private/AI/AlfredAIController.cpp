@@ -25,7 +25,6 @@ void AAlfredAIController::NPCReachesTheLocation(FAIRequestID RequestID, EPathFol
 
 		//Pass to warning state: He has noticed something and now he getting worried
 		ownerController->AlfredAI->AlfredFSM->GoToNewState(EEnemyState::Warning);
-		ownerController->AlfredAI->AlfredFSM->RunActionOfCurrentState();
 		ownerController->GetWorldTimerManager().SetTimer(ownerController->AlfredAI->GoToCalmTimer, ownerController->AlfredAI->AlfredFSM,
 			&UAlfredFSM::GoToDefaultState, 60.0f);
 	}

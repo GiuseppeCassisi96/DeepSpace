@@ -4,7 +4,7 @@
 #include "AI/BT/AttackBT.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "BaseMain.h"
+#include "Enemy/MainEnemy.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
@@ -22,7 +22,7 @@ ETaskExeState UAttackBT::RunTree()
 		return TreeExeState;
 	}
 	//I check if the external reference is valid 
-	if(IsValid(playerRefBT))
+	if(!IsValid(playerRefBT.Get()))
 	{
 		TreeExeState = ETaskExeState::Fail;
 		return ETaskExeState::Fail;
@@ -82,15 +82,17 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 //Condition
 ETaskExeState UAttackBT::CheckLife()
 {
-	if (Cast<ABaseMain>(playerRefBT)->health <= 0.0f)
+	if (!IsValid(playerRefBT.Get()))
+	{
 		return ETaskExeState::Fail;
+	}
 	return ETaskExeState::Success;
 }
 
 //Condition
 ETaskExeState UAttackBT::CheckDistanceMoreThan()
 {
-	float currentDinstance = FVector::Dist(playerRefBT->GetActorLocation(), ownerBT->GetActorLocation());
+	float currentDinstance = FVector::Dist(entityLocation, ownerBT->GetActorLocation());
 	if (currentDinstance > 92.0f)
 	{
 		return ETaskExeState::Success;
@@ -101,7 +103,7 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 //Action
 ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
-	AlfredAIController->MoveToLocation(playerRefBT->GetActorLocation());
+	AlfredAIController->MoveToLocation(entityLocation);
 	return ETaskExeState::Success;
 	
 }

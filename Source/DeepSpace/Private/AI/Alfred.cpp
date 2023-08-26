@@ -63,6 +63,7 @@ void UAlfred::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	{
 		AlfredSensing->EnemyView(); //RUN THE VIEW SENSOR
 		AlfredSensing->EnemyHearing(); //RUN THE HEAR SENSOR
+		AlfredFSM->RunActionOfCurrentState();
 	}
 		
 }
