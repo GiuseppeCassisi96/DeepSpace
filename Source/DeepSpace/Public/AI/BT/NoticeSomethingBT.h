@@ -23,9 +23,8 @@ public:
 	 * @brief Initialize the tree
 	 * @param owner The owner of the tree
 	 * @param navSys The navigation system
-	 * @param location The noise source location
 	 */
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, FVector location);
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController);
 	/**
 	 * @brief Check if the BT is stopped or not and then run the root task of tree
 	 * @return The execution state of tree

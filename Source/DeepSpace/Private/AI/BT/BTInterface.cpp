@@ -3,6 +3,8 @@
 
 #include "AI/BT/BTInterface.h"
 
+#include "Enemy/MainEnemy.h"
+
 
 UBTInterface::UBTInterface()
 {
@@ -19,11 +21,12 @@ void UBTInterface::StopTree()
 	bIsStopped = true;
 }
 
-void UBTInterface::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
+void UBTInterface::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
 	ownerBT = owner;
-	NavSys = navSys;
-	AIController = Cast<AAIController>(ownerBT->GetController());
+	NavSysBT = navSys;
+	AlfredAIController = AIController;
+	
 }
 
 

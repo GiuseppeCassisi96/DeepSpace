@@ -27,25 +27,22 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	UFUNCTION()
 	void TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,  AController* InstigatedBy, AActor* DamageCauser);
-	UPROPERTY()
-	TObjectPtr<UCalmBT> CalmBT;
-	UPROPERTY()
-	TObjectPtr<UAttackBT> AttackBT;
-	UPROPERTY()
-	TObjectPtr<UWarningBT> WarningBT;
-	UPROPERTY()
-	TObjectPtr<UNoticeSomethingBT> NoticeSomethingBT;
 	UPROPERTY(EditAnywhere, Category= "AI")
 	TObjectPtr<UAlfred> AlfredAI;
-	UPROPERTY(EditAnywhere, Category = "FSM")
-	TObjectPtr<UAlfredFSM> AlfredFSM;
+
 	UPROPERTY(EditDefaultsOnly, Category = "ViewBox")
 	UBoxComponent* ViewBox;
 	UPROPERTY(EditDefaultsOnly, Category = "HearingSphere")
 	USphereComponent* HearingSphere;
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<UDamageType> typeDamage;
-	
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
+	/**
+	 * @brief The AI controller used to send a move request to the enemy
+	 */
+	UPROPERTY()
+	AAlfredAIController* ControllerNPC;
 
 protected:
 	// Called when the game starts or when spawned
@@ -55,6 +52,7 @@ protected:
 	void ResetDeath(AMainEnemy* Enemy);
 	FTimerHandle Handle;
 	FTimerDelegate TimerDelegate;
+	
 };
 
 

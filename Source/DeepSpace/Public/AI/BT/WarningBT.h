@@ -37,7 +37,9 @@ public:
 	 * @param owner The owner of the tree
 	 * @param navSys The navigation system
 	 */
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys) override;
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController) override;
+	UFUNCTION()
+	void RunAgain();
 	//TASK FUNCTIONS-----------------------------
 	UFUNCTION()
 	ETaskExeState CanReachRandPos();
@@ -62,5 +64,7 @@ public:
 	 * can represent the noise source location or the last known position of hostile entity
 	 */
 	FVector Location;
-	
+	FNavLocation randLocation;
+	FTimerHandle TimerHandle;
+	bool bCanRunAgain = true;
 };

@@ -37,10 +37,8 @@ public:
 	 * @brief Initialize the tree
 	 * @param owner The owner of the tree
 	 * @param navSys The navigation system
-	 * @param playerRef The reference to the target 
-	 * @param type The type of damage 
 	 */
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type);
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController) override;
 	//TASK FUNCTIONS-----------------------------
 	UFUNCTION()
 	ETaskExeState CheckLife();
@@ -80,6 +78,7 @@ public:
 	//PARAMATERS OF TREE-----------------------------
 	UPROPERTY()
 	TObjectPtr<ACharacter> playerRefBT;
+	FVector entityLocation;
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
 	TSubclassOf<UDamageType> typeDamage;

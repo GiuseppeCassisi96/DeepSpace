@@ -11,7 +11,7 @@
 AThrowableItem::AThrowableItem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	RootComponent = ItemMesh;
 
@@ -25,12 +25,6 @@ void AThrowableItem::BeginPlay()
 	bIsFirstHit = true;
 }
 
-// Called every frame
-void AThrowableItem::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 void AThrowableItem::OnGeneralHit(UPrimitiveComponent* HitComponent,
 	AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {

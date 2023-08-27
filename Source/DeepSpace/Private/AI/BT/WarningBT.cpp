@@ -5,6 +5,7 @@
 
 #include "NavigationPath.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 
@@ -12,17 +13,23 @@ ETaskExeState UWarningBT::RunTree()
 {
 	if (!bIsStopped)
 	{
-		FLinearColor colorOrange(1.0f, 0.55f, 0.0f);
-		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorOrange);
-		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
-		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
-		TreeExeState = RootTask->RunTask();
-		if (TreeExeState == ETaskExeState::TryAgain)
+		if (bCanRunAgain)
 		{
-			//I create a timer to implement until fail decorator
-			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-				FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunTree),
-				10.0f, false);
+			FLinearColor colorOrange(1.0f, 0.55f, 0.0f);
+			MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), colorOrange);
+			ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+			ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+			ownerBT->GetCharacterMovement()->MaxWalkSpeed = 250.0f;
+			TreeExeState = RootTask->RunTask();
+			if (TreeExeState == ETaskExeState::TryAgain)
+			{
+				bCanRunAgain = false;
+				//I create a timer to implement until fail decorator
+				const float randTime = FMath::RandRange(18.0f, 23.0f);
+				ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
+					FTimerDelegate::TMethodPtr<UWarningBT>(&UWarningBT::RunAgain),
+					randTime, false);
+			}
 		}
 		return TreeExeState;
 	}
@@ -33,12 +40,13 @@ ETaskExeState UWarningBT::RunTree()
 void UWarningBT::StopTree()
 {
 	Super::StopTree();
+	bCanRunAgain = true;
 	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
 }
 
-void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
+void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskcanReachRandPos = NewObject<UTaskBT>(this, FName("FTWarningBT"));
@@ -63,10 +71,16 @@ void UWarningBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSy
 	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
 		ownerBT);
 }
+
+void UWarningBT::RunAgain()
+{
+	bCanRunAgain = true;
+}
+
 //Condition
 ETaskExeState UWarningBT::CanReachRandPos()
 {
-	if (NavSys->GetRandomReachablePointInRadius(Location,
+	if (NavSysBT->GetRandomReachablePointInRadius(Location,
 		1800.0f, randLocation))
 	{
 		return ETaskExeState::Success;//Success!
@@ -76,7 +90,7 @@ ETaskExeState UWarningBT::CanReachRandPos()
 //Action
 ETaskExeState UWarningBT::GoToRandPos()
 {
-	AIController->MoveToLocation(randLocation.Location);
+	AlfredAIController->MoveToLocation(randLocation.Location);
 	return ETaskExeState::Success;//Success !
 }
 

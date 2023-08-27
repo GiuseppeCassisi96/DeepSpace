@@ -12,10 +12,10 @@
 UENUM()
 enum class ETaskExeState
 {
-	Success,
-	Fail,
-	TryAgain,
-	Stopped
+	Success = 0,
+	Fail = -1,
+	TryAgain = 1,
+	Stopped = 2
 };
 /// <summary>
 /// It is the type of delegate. This type in particular defines the type of the return value (ETaskExeState).

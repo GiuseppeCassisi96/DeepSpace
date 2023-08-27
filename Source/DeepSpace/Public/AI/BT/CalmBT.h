@@ -37,11 +37,13 @@ public:
 	 * @param owner The owner of the tree
 	 * @param navSys The navigation system
 	 */
-	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys) override;
+	virtual void InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController) override;
 	/**
 	 * @brief Stop the tree
 	 */
 	virtual void StopTree() override;
+	UFUNCTION()
+	void RunAgain();
 
 	//TASK FUNCTIONS-----------------------------
 	UFUNCTION()
@@ -61,5 +63,7 @@ public:
 	//NODES OF TREE------------------------------
 	UPROPERTY()
 	UMaterialInstanceDynamic* MaterialInstance;
-
+	FNavLocation randLocation;
+	FTimerHandle TimerHandle;
+	bool bCanRunAgain = true;
 };

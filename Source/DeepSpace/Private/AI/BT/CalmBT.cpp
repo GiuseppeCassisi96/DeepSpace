@@ -4,6 +4,7 @@
 #include "AI/BT/CalmBT.h"
 
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 
@@ -11,16 +12,22 @@ ETaskExeState UCalmBT::RunTree()
 {
 	if (!bIsStopped)
 	{
-		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), FLinearColor::Green);
-		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
-		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
-		TreeExeState = RootTask->RunTask();
-		if(TreeExeState == ETaskExeState::TryAgain)
+		if(bCanRunAgain)
 		{
-			//I create a timer to implement until fail decorator
-			ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
-				FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::RunTree),
-				10.0f, false);
+			MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), FLinearColor::Green);
+			ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
+			ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+			ownerBT->GetCharacterMovement()->MaxWalkSpeed = 180.0f;
+			TreeExeState = RootTask->RunTask();
+			if (TreeExeState == ETaskExeState::TryAgain)
+			{
+				bCanRunAgain = false;
+				const float randTime = FMath::RandRange(20.0f, 25.0f);
+				//I create a timer to implement until fail decorator
+				ownerBT->GetWorldTimerManager().SetTimer(TimerHandle, this,
+					FTimerDelegate::TMethodPtr<UCalmBT>(&UCalmBT::RunAgain),
+					randTime, false);
+			}
 		}
 		return TreeExeState;
 	}
@@ -31,9 +38,9 @@ ETaskExeState UCalmBT::RunTree()
 
 
 
-void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys)
+void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	TaskIsReachable = NewObject<UTaskBT>(this, FName("FTCalmBT"));
@@ -65,13 +72,19 @@ void UCalmBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSyste
 void UCalmBT::StopTree()
 {
 	Super::StopTree();
+	bCanRunAgain = true;
 	ownerBT->GetWorldTimerManager().ClearTimer(TimerHandle);
+}
+
+void UCalmBT::RunAgain()
+{
+	bCanRunAgain = true;
 }
 
 //Condition
 ETaskExeState UCalmBT::IsReachable()
 {
-	if (NavSys->GetRandomReachablePointInRadius(ownerBT->GetActorLocation(),
+	if (NavSysBT->GetRandomReachablePointInRadius(ownerBT->GetActorLocation(),
 		3000.0f, randLocation))
 	{
 		return ETaskExeState::Success;//Success!
@@ -83,7 +96,7 @@ ETaskExeState UCalmBT::IsReachable()
 //Action
 ETaskExeState UCalmBT::GoToRandPosition()
 {
-	AIController->MoveToLocation(randLocation.Location);
+	AlfredAIController->MoveToLocation(randLocation.Location);
 	return ETaskExeState::Success;//Success !
 }
 

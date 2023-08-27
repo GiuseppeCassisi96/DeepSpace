@@ -4,7 +4,8 @@
 #include "AI/BT/AttackBT.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "BaseMain.h"
+#include "Enemy/MainEnemy.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 
@@ -16,8 +17,15 @@ ETaskExeState UAttackBT::RunTree()
 		MaterialInstance->SetVectorParameterValue(TEXT("ColorLight"), FLinearColor::Red);
 		ownerBT->GetMesh()->SetMaterial(5, MaterialInstance);
 		ownerBT->GetMesh()->SetMaterial(8, MaterialInstance);
+		ownerBT->GetCharacterMovement()->MaxWalkSpeed = 350.0f;
 		TreeExeState = RootTask->RunTask();
 		return TreeExeState;
+	}
+	//I check if the external reference is valid 
+	if(!IsValid(playerRefBT.Get()))
+	{
+		TreeExeState = ETaskExeState::Fail;
+		return ETaskExeState::Fail;
 	}
 	TreeExeState = ETaskExeState::Stopped;
 	return ETaskExeState::Stopped;
@@ -29,9 +37,9 @@ void UAttackBT::StopTree()
 	Super::StopTree();
 }
 
-void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<ACharacter> playerRef, TSubclassOf<UDamageType> type)
+void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSystemV1> navSys, TObjectPtr<AAlfredAIController> AIController)
 {
-	Super::InitTree(owner, navSys);
+	Super::InitTree(owner, navSys, AIController);
 	//INSTANCIES CREATION PHASE: Here I create the node instances
 		//TASKS
 	checkLifeOfTarget = NewObject<UTaskBT>();
@@ -56,17 +64,17 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 	firstSequence->Tasks.Add(checkLifeOfTarget);
 	firstSequence->Tasks.Add(checkDistanceMT);
 	firstSequence->Tasks.Add(followThePlayer);
+
 	secondSequence->Tasks.Add(checkLifeOfTarget);
 	secondSequence->Tasks.Add(attackThePlayer);
 	secondSequence->Tasks.Add(wait);
+
 	sequenceSelector->Tasks.Add(firstSequence);
 	sequenceSelector->Tasks.Add(secondSequence);
 
 	//PARAM SETTING PHASE:
 	RootTask = sequenceSelector;
 	bCanAttack = true;
-	playerRefBT = playerRef;
-	typeDamage = type;
 	MaterialInstance = UMaterialInstanceDynamic::Create(ownerBT->GetMesh()->GetMaterial(5),
 		NULL);
 }
@@ -74,15 +82,17 @@ void UAttackBT::InitTree(TObjectPtr<ACharacter> owner, TObjectPtr<UNavigationSys
 //Condition
 ETaskExeState UAttackBT::CheckLife()
 {
-	if (Cast<ABaseMain>(playerRefBT)->health <= 0.0f)
+	if (!IsValid(playerRefBT.Get()))
+	{
 		return ETaskExeState::Fail;
+	}
 	return ETaskExeState::Success;
 }
 
 //Condition
 ETaskExeState UAttackBT::CheckDistanceMoreThan()
 {
-	float currentDinstance = FVector::Dist(playerRefBT->GetActorLocation(), ownerBT->GetActorLocation());
+	float currentDinstance = FVector::Dist(entityLocation, ownerBT->GetActorLocation());
 	if (currentDinstance > 92.0f)
 	{
 		return ETaskExeState::Success;
@@ -93,8 +103,8 @@ ETaskExeState UAttackBT::CheckDistanceMoreThan()
 //Action
 ETaskExeState UAttackBT::GoTowardsThePlayer()
 {
-	AIController->MoveToLocation(playerRefBT->GetActorLocation());
-	return ETaskExeState::Success;//Success !
+	AlfredAIController->MoveToLocation(entityLocation);
+	return ETaskExeState::Success;
 	
 }
 
