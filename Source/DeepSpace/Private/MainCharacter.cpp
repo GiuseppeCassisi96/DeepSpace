@@ -3,7 +3,7 @@
 
 #include "MainCharacter.h"
 
-#include "Components/SkeletalMeshComponent.h"
+
 
 
 // Sets default values
@@ -47,6 +47,8 @@ void AMainCharacter::BeginPlay()
 	AnimInstance = CharMesh->GetAnimInstance();
 	springArmLenght = SpringArm->TargetArmLength;
 	startMovementSpeed = movementSpeed;
+	SetupBones();
+	OnTakeAnyDamage.AddDynamic(this, &AMainCharacter::TakeDamageFromEnemy);
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -68,34 +70,46 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AMainCharacter::Aim);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMainCharacter::Run);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMainCharacter::Run);
+		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &AMainCharacter::Throw);
 	}
 }
 
 void AMainCharacter::Move(const FInputActionValue& actionValue)
 {
 	FVector2D inputValue = actionValue.Get<FVector2D>();
+	//I Get the forward direction and right direction
 	FVector forwardDirection = GetActorForwardVector();
 	FVector rightDirection = GetActorRightVector();
+	//I compute the movement direction
 	FVector direction = forwardDirection * inputValue.X + rightDirection * inputValue.Y;
+
 	rightMovementValue = inputValue.Y;
 	forwardMovementValue = inputValue.X;
+	/*I'm setting the movement boolean vars based on player movement and also based on the fact
+	 * if it is in crouch animation state or not
+	 */
+	//Right movement
 	if(inputValue.Y > 0.0f)
 	{
 		isMovementRight = true;
 		isMovementLeft = false;
+		SetState(AnimState::Walk);
 		if(isCrouch)
 		{
 			isMovementRight = false;
 			isCrouchMovementRight = true;
 			isCrouchMovementLeft = false;
+			SetState(AnimState::Crouch);
 		}
 	}
 	else if (inputValue.Y < 0.0f)
 	{
+		SetState(AnimState::Walk);
 		isMovementRight = false;
 		isMovementLeft = true;
 		if (isCrouch)
 		{
+			SetState(AnimState::Crouch);
 			isMovementLeft = false;
 			isCrouchMovementRight = false;
 			isCrouchMovementLeft = true;
@@ -108,13 +122,27 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 		isCrouchMovementRight = false;
 		isCrouchMovementLeft = false;
 	}
+
+	//Forward movement
 	if(inputValue.X < 0)
 	{
+		SetState(AnimState::Walk);
 		isMovementBack = true;
 		if (isCrouch)
 		{
+			SetState(AnimState::Crouch);
 			isMovementBack = false;
 			isCrouchMovementBack = true;
+		}
+	}
+	else if(inputValue.X > 0)
+	{
+		SetState(AnimState::Walk);
+		isMovementBack = false;
+		isCrouchMovementBack = false;
+		if (isCrouch)
+		{
+			SetState(AnimState::Crouch);
 		}
 	}
 	else
@@ -122,7 +150,7 @@ void AMainCharacter::Move(const FInputActionValue& actionValue)
 		isMovementBack = false;
 		isCrouchMovementBack = false;
 	}
-
+	//I compute the final movement 
 	FVector movement = direction * movementSpeed;
 	AddMovementInput(movement);
 }
@@ -137,6 +165,7 @@ void AMainCharacter::Rotation(const FInputActionValue& actionValue)
 	FRotator currentRotation = SpringArm->GetRelativeRotation();
 	float pitch = FMath::Clamp(currentRotation.Pitch, -50.0f, 20.0f);
 	SpringArm->SetRelativeRotation(FRotator(pitch, currentRotation.Yaw, currentRotation.Roll));
+	//If the character is aiming, I set the spine rotation with the rotation pitch value
 	if(isAiming)
 	{
 		spineRotation = FRotator(0.0f, 0.0f,
@@ -161,6 +190,7 @@ void AMainCharacter::Aim(const FInputActionValue& actionValue)
 	AnimInstance->Montage_JumpToSection("Aim");
 	AnimInstance->Montage_Play(aimMontage);
 	SpringArm->TargetArmLength = 50.0f;
+	//I reset the spine rotation if the character isn't aiming 
 	if(!isAiming)
 	{
 		AnimInstance->Montage_Stop(0.0f, aimMontage);
@@ -175,10 +205,49 @@ void AMainCharacter::Run(const FInputActionValue& actionValue)
 	if(actionValue.Get<bool>() && forwardMovementValue > 0 && rightMovementValue == 0 && !isCrouch)
 	{
 		movementSpeed =  1.7f;
+		SetState(AnimState::Run);
 	}
 	else
 	{
 		movementSpeed = startMovementSpeed;
+		SetState(AnimState::Run);
+	}
+}
+
+void AMainCharacter::Throw(const FInputActionValue& actionValue)
+{
+	//I can throws an obj only if the player is aiming
+	if(isAiming)
+	{
+		FVector location = GetMesh()->GetBoneLocation("RightHand", EBoneSpaces::WorldSpace);
+		int index = GetMesh()->GetBoneIndex("RightHand");
+		FRotator rotation = FRotator::ZeroRotator;
+		AThrowableItem* obj = Cast<AThrowableItem>(GetWorld()->SpawnActor(ThrowableObj, &location, &rotation));
+		obj->ItemMesh->AddForce(500000.0f * -GetMesh()->GetBoneTransform(index).GetUnitAxis(EAxis::Y));
+	}
+	
+}
+
+TArray<FVector> AMainCharacter::GetCharacterBones()
+{
+	return Super::GetCharacterBones();
+}
+
+void AMainCharacter::SetState(AnimState newState)
+{
+	state = newState;
+}
+
+void AMainCharacter::TakeDamageFromEnemy(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
+{
+	Damage += 20; //Weakness of Human 
+	health -= Damage;
+	if(health <= 0.0f)
+	{
+		Destroy();
+		UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(),
+			EQuitPreference::Quit, false);
 	}
 }
 
